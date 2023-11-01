@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Day 1: Points</title>
+
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/united.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script src="site_libs/navigation-1.1/sourceembed.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+<style type="text/css">
+#rmd-source-code {
+  display: none;
+}
+</style>
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">30 días de mapas 2023</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Desafíos
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="day1.html">Día 1: Puntos</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-download-source" href="#">Download Rmd</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Day 1: Points</h1>
+
+</div>
+
+
+<div id="datos" class="section level2">
+<h2>Datos</h2>
+<p>Ubicación de las estaciones meteorológicas del Servicio Meteorológico
+Nacional disponibles en: <a
+href="https://www.smn.gob.ar/descarga-de-datos">www.smn.gob.ar/descarga-de-datos</a>.
+Pero parsear ese archivo para usarlo en R es una cosa que se hace solo
+una vez en la vida por lo que vamos a usar los datos guardados en un
+repo, limpios y listos para usar. Porque la realidad es que no se han
+agregado estaciones nuevas.</p>
+<pre class="r"><code>estaciones &lt;- fread(&quot;https://raw.githubusercontent.com/eliocamp/r-clima/fffb3fa596bc73afeeaa2a6296804da436e82fd3/datos/estaciones_smn.csv&quot;) %&gt;% 
+  .[provincia != &quot;ANTARTIDA&quot;] # Para hacer un mapa mas chiquito sin la Antartida
+
+estaciones %&gt;% 
+  head(10) %&gt;% 
+  knitr::kable()</code></pre>
+<table style="width:100%;">
+<colgroup>
+<col width="27%" />
+<col width="16%" />
+<col width="8%" />
+<col width="8%" />
+<col width="8%" />
+<col width="8%" />
+<col width="13%" />
+<col width="8%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">nombre</th>
+<th align="left">provincia</th>
+<th align="right">lon</th>
+<th align="right">lat</th>
+<th align="right">altura</th>
+<th align="right">numero</th>
+<th align="left">numeroOACI</th>
+<th align="left">region</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">AZUL AERO</td>
+<td align="left">BUENOS AIRES</td>
+<td align="right">-59.53</td>
+<td align="right">-36.50</td>
+<td align="right">147</td>
+<td align="right">87641</td>
+<td align="left">SAZA</td>
+<td align="left">CENTRO</td>
+</tr>
+<tr class="even">
+<td align="left">BAHIA BLANCA AERO</td>
+<td align="left">BUENOS AIRES</td>
+<td align="right">-62.10</td>
+<td align="right">-38.44</td>
+<td align="right">83</td>
+<td align="right">87750</td>
+<td align="left">SAZB</td>
+<td align="left">CENTRO</td>
+</tr>
+<tr class="odd">
+<td align="left">BENITO JUAREZ AERO</td>
+<td align="left">BUENOS AIRES</td>
+<td align="right">-59.47</td>
+<td align="right">-37.43</td>
+<td align="right">207</td>
+<td align="right">87649</td>
+<td align="left">SAZJ</td>
+<td align="left">CENTRO</td>
+</tr>
+<tr class="even">
+<td align="left">BOLIVAR AERO</td>
+<td align="left">BUENOS AIRES</td>
+<td align="right">-61.40</td>
+<td align="right">-36.12</td>
+<td align="right">94</td>
+<td align="right">87640</td>
+<td align="left">SAZI</td>
+<td align="left">CENTRO</td>
+</tr>
+<tr class="odd">
+<td align="left">CAMPO DE MAYO AERO</td>
+<td align="left">BUENOS AIRES</td>
+<td align="right">-58.40</td>
+<td align="right">-34.32</td>
+<td align="right">26</td>
+<td align="right">87570</td>
+<td align="left">SADO</td>
+<td align="left">CENTRO</td>
+</tr>
+<tr class="even">
+<td align="left">CORONEL PRINGLES AERO</td>
+<td align="left">BUENOS AIRES</td>
+<td align="right">-61.20</td>
+<td align="right">-38.10</td>
+<td align="right">247</td>
+<td align="right">87683</td>
+<td align="left">SABP</td>
+<td align="left">CENTRO</td>
+</tr>
+<tr class="odd">
+<td align="left">CORONEL SUAREZ AERO</td>
+<td align="left">BUENOS AIRES</td>
+<td align="right">-61.53</td>
+<td align="right">-37.26</td>
+<td align="right">233</td>
+<td align="right">87637</td>
+<td align="left">SAZC</td>
+<td align="left">CENTRO</td>
+</tr>
+<tr class="even">
+<td align="left">DOLORES AERO</td>
+<td align="left">BUENOS AIRES</td>
+<td align="right">-57.44</td>
+<td align="right">-36.21</td>
+<td align="right">9</td>
+<td align="right">87648</td>
+<td align="left">SAZD</td>
+<td align="left">CENTRO</td>
+</tr>
+<tr class="odd">
+<td align="left">EL PALOMAR AERO</td>
+<td align="left">BUENOS AIRES</td>
+<td align="right">-58.36</td>
+<td align="right">-34.36</td>
+<td align="right">12</td>
+<td align="right">87571</td>
+<td align="left">SADP</td>
+<td align="left">CENTRO</td>
+</tr>
+<tr class="even">
+<td align="left">EZEIZA AERO</td>
+<td align="left">BUENOS AIRES</td>
+<td align="right">-58.32</td>
+<td align="right">-34.49</td>
+<td align="right">20</td>
+<td align="right">87576</td>
+<td align="left">SAEZ</td>
+<td align="left">CENTRO</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>mapa &lt;- rnaturalearth::ne_states(c(&quot;Argentina&quot;, &quot;Falkland Islands&quot;), returnclass = &quot;sf&quot;)</code></pre>
+</div>
+<div id="primer-intento" class="section level2">
+<h2>Primer intento</h2>
+<p>El mapa que sigue cumple con la consigna de hoy pero no es
+particularmente interesante graficar solo la ubicación de las
+estaciones. Seguro nos da una idea de la inhomogeneidad de la ubicación
+de las estaciones que depende en gran medida de <em>donde vive la gente
+en Argentina</em>.</p>
+<pre class="r"><code>ggplot(estaciones, aes(lon, lat)) +
+  geom_sf(data = mapa, inherit.aes = FALSE, fill = &quot;grey98&quot;) +
+  geom_point(size = 1, color = &quot;darkorange&quot;, alpha = 0.5) +
+  labs(x = NULL, y = NULL,
+       title = &quot;Ubicación de las estaciones meteorológicas  \noficiales en Argentina&quot;,
+       caption = &quot;Fuente: Servicio Meteorológico Nacional&quot;) +
+  theme_minimal(base_size = 8,
+                base_family = &quot;Roboto Condensed Light&quot;) +
+  theme(plot.title.position = &quot;plot&quot;)</code></pre>
+<p><img src="day1_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>Calculemos entonces la distancia de cada estación a su vecina más
+cercana. Cómo estamos trabajando con latitudes y longitudes en un globo,
+la distancia euclidia no es suficiente. Es decir, 13º de distancia al
+norte de Argentina no equivale a la misma distancia en kilómetros en el
+sur de la Patagonia. Necesitamos tener en cuenta esto y para eso la
+libreria <code>geodist</code> funciona barbaro.</p>
+<pre class="r"><code>dist &lt;- geodist(estaciones[, c(&quot;lon&quot;, &quot;lat&quot;)],  measure = &quot;geodesic&quot;) 
+
+colnames(dist) &lt;- estaciones$numeroOACI
+rownames(dist) &lt;- estaciones$numeroOACI
+
+dist &lt;- reshape2::melt(dist, value.name = &quot;distancia&quot;) %&gt;% 
+  setDT() %&gt;% 
+  setnames(c(&quot;Var1&quot;, &quot;Var2&quot;), c(&quot;numeroOACI&quot;, &quot;vecina&quot;)) %&gt;% 
+  .[numeroOACI != vecina] %&gt;% 
+  .[, .SD[distancia == min(distancia)], by = .(numeroOACI)]
+
+estaciones &lt;- estaciones[dist, on = .NATURAL]</code></pre>
+</div>
+<div id="segundo-intento" class="section level2">
+<h2>Segundo intento</h2>
+<p>Para sorpresa de nadie, muchas de las estaciones en la Patagonia
+estan aisladas del resto, particularmente en la zona central donde la
+densidad de población es bajisima.</p>
+<pre class="r"><code>estaciones %&gt;% 
+  ggplot(aes(lon, lat)) +
+  geom_sf(data = mapa, inherit.aes = FALSE, fill = &quot;grey98&quot;) +
+  geom_point(aes(color = distancia/1000), size = 1, alpha = 1) +
+  geom_point(data = estaciones[distancia &gt; 200*1000], shape = 21) +
+  scale_color_viridis_c(breaks = seq(0, 300, 25), 
+                        guide = guide_colorsteps(barwidth = 0.5,
+                                                 barheight = 15),
+                        direction = 1) +
+    labs(x = NULL, y = NULL, color = &quot;[km]&quot;,
+       title = &quot;Distancia a la estación meteorológica más cercana&quot;,
+       subtitle = &quot;8 estaciones están a más de 200 km de la vecina más cercana&quot;,
+       caption = &quot;Fuente: Servicio Meteorológico Nacional&quot;) +
+  theme_minimal(base_size = 8,
+                base_family = &quot;Roboto Condensed Light&quot;) +
+  theme(plot.title.position = &quot;plot&quot;,
+        plot.title = element_text(face = &quot;bold&quot;))</code></pre>
+<p><img src="day1_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<pre class="r"><code>#ggsave(&quot;day1.png&quot;, device = png, type = &quot;cairo&quot;, bg = &quot;white&quot;, width = 10, height = 18, units = &quot;cm&quot;, dpi = 150)</code></pre>
+</div>
+
+<div id="rmd-source-code">LS0tCnRpdGxlOiAnRGF5IDE6IFBvaW50cycKb3V0cHV0OgogIGh0bWxfZG9jdW1lbnQ6CiAgICBjb2RlX2Rvd25sb2FkOiB0cnVlCi0tLQoKYGBge3Igc2V0dXAsIGluY2x1ZGU9RkFMU0V9CmtuaXRyOjpvcHRzX2NodW5rJHNldChlY2hvID0gVFJVRSkKCmxpYnJhcnkoZHBseXIpCmxpYnJhcnkoZ2dwbG90MikKbGlicmFyeShkYXRhLnRhYmxlKQpsaWJyYXJ5KGdlb2Rpc3QpCmBgYAoKIyMgRGF0b3MKClViaWNhY2nDs24gZGUgbGFzIGVzdGFjaW9uZXMgbWV0ZW9yb2zDs2dpY2FzIGRlbCBTZXJ2aWNpbyBNZXRlb3JvbMOzZ2ljbyBOYWNpb25hbCBkaXNwb25pYmxlcyBlbjogW3d3dy5zbW4uZ29iLmFyL2Rlc2NhcmdhLWRlLWRhdG9zXShodHRwczovL3d3dy5zbW4uZ29iLmFyL2Rlc2NhcmdhLWRlLWRhdG9zKS4gUGVybyBwYXJzZWFyIGVzZSBhcmNoaXZvIHBhcmEgdXNhcmxvIGVuIFIgZXMgdW5hIGNvc2EgcXVlIHNlIGhhY2Ugc29sbyB1bmEgdmV6IGVuIGxhIHZpZGEgcG9yIGxvIHF1ZSB2YW1vcyBhIHVzYXIgbG9zIGRhdG9zIGd1YXJkYWRvcyBlbiB1biByZXBvLCBsaW1waW9zIHkgbGlzdG9zIHBhcmEgdXNhci4gUG9ycXVlIGxhIHJlYWxpZGFkIGVzIHF1ZSBubyBzZSBoYW4gYWdyZWdhZG8gZXN0YWNpb25lcyBudWV2YXMuIAoKYGBge3J9CmVzdGFjaW9uZXMgPC0gZnJlYWQoImh0dHBzOi8vcmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbS9lbGlvY2FtcC9yLWNsaW1hL2ZmZmIzZmE1OTZiYzczYWZlZWFhMmE2Mjk2ODA0ZGE0MzZlODJmZDMvZGF0b3MvZXN0YWNpb25lc19zbW4uY3N2IikgJT4lIAogIC5bcHJvdmluY2lhICE9ICJBTlRBUlRJREEiXSAjIFBhcmEgaGFjZXIgdW4gbWFwYSBtYXMgY2hpcXVpdG8gc2luIGxhIEFudGFydGlkYQoKZXN0YWNpb25lcyAlPiUgCiAgaGVhZCgxMCkgJT4lIAogIGtuaXRyOjprYWJsZSgpCgptYXBhIDwtIHJuYXR1cmFsZWFydGg6Om5lX3N0YXRlcyhjKCJBcmdlbnRpbmEiLCAiRmFsa2xhbmQgSXNsYW5kcyIpLCByZXR1cm5jbGFzcyA9ICJzZiIpCmBgYAoKIyMgUHJpbWVyIGludGVudG8KCkVsIG1hcGEgcXVlIHNpZ3VlIGN1bXBsZSBjb24gbGEgY29uc2lnbmEgZGUgaG95IHBlcm8gbm8gZXMgcGFydGljdWxhcm1lbnRlIGludGVyZXNhbnRlIGdyYWZpY2FyIHNvbG8gbGEgdWJpY2FjacOzbiBkZSBsYXMgZXN0YWNpb25lcy4gU2VndXJvIG5vcyBkYSB1bmEgaWRlYSBkZSBsYSBpbmhvbW9nZW5laWRhZCBkZSBsYSB1YmljYWNpw7NuIGRlIGxhcyBlc3RhY2lvbmVzIHF1ZSBkZXBlbmRlIGVuIGdyYW4gbWVkaWRhIGRlICpkb25kZSB2aXZlIGxhIGdlbnRlIGVuIEFyZ2VudGluYSouIAoKYGBge3J9CmdncGxvdChlc3RhY2lvbmVzLCBhZXMobG9uLCBsYXQpKSArCiAgZ2VvbV9zZihkYXRhID0gbWFwYSwgaW5oZXJpdC5hZXMgPSBGQUxTRSwgZmlsbCA9ICJncmV5OTgiKSArCiAgZ2VvbV9wb2ludChzaXplID0gMSwgY29sb3IgPSAiZGFya29yYW5nZSIsIGFscGhhID0gMC41KSArCiAgbGFicyh4ID0gTlVMTCwgeSA9IE5VTEwsCiAgICAgICB0aXRsZSA9ICJVYmljYWNpw7NuIGRlIGxhcyBlc3RhY2lvbmVzIG1ldGVvcm9sw7NnaWNhcyAgXG5vZmljaWFsZXMgZW4gQXJnZW50aW5hIiwKICAgICAgIGNhcHRpb24gPSAiRnVlbnRlOiBTZXJ2aWNpbyBNZXRlb3JvbMOzZ2ljbyBOYWNpb25hbCIpICsKICB0aGVtZV9taW5pbWFsKGJhc2Vfc2l6ZSA9IDgsCiAgICAgICAgICAgICAgICBiYXNlX2ZhbWlseSA9ICJSb2JvdG8gQ29uZGVuc2VkIExpZ2h0IikgKwogIHRoZW1lKHBsb3QudGl0bGUucG9zaXRpb24gPSAicGxvdCIpCmBgYAoKQ2FsY3VsZW1vcyBlbnRvbmNlcyBsYSBkaXN0YW5jaWEgZGUgY2FkYSBlc3RhY2nDs24gYSBzdSB2ZWNpbmEgbcOhcyBjZXJjYW5hLiBDw7NtbyBlc3RhbW9zIHRyYWJhamFuZG8gY29uIGxhdGl0dWRlcyB5IGxvbmdpdHVkZXMgZW4gdW4gZ2xvYm8sIGxhIGRpc3RhbmNpYSBldWNsaWRpYSBubyBlcyBzdWZpY2llbnRlLiBFcyBkZWNpciwgMTPCuiBkZSBkaXN0YW5jaWEgYWwgbm9ydGUgZGUgQXJnZW50aW5hIG5vIGVxdWl2YWxlIGEgbGEgbWlzbWEgZGlzdGFuY2lhIGVuIGtpbMOzbWV0cm9zIGVuIGVsIHN1ciBkZSBsYSBQYXRhZ29uaWEuIE5lY2VzaXRhbW9zIHRlbmVyIGVuIGN1ZW50YSBlc3RvIHkgcGFyYSBlc28gbGEgbGlicmVyaWEgYGdlb2Rpc3RgIGZ1bmNpb25hIGJhcmJhcm8uCgpgYGB7cn0KCmRpc3QgPC0gZ2VvZGlzdChlc3RhY2lvbmVzWywgYygibG9uIiwgImxhdCIpXSwgIG1lYXN1cmUgPSAiZ2VvZGVzaWMiKSAKCmNvbG5hbWVzKGRpc3QpIDwtIGVzdGFjaW9uZXMkbnVtZXJvT0FDSQpyb3duYW1lcyhkaXN0KSA8LSBlc3RhY2lvbmVzJG51bWVyb09BQ0kKCmRpc3QgPC0gcmVzaGFwZTI6Om1lbHQoZGlzdCwgdmFsdWUubmFtZSA9ICJkaXN0YW5jaWEiKSAlPiUgCiAgc2V0RFQoKSAlPiUgCiAgc2V0bmFtZXMoYygiVmFyMSIsICJWYXIyIiksIGMoIm51bWVyb09BQ0kiLCAidmVjaW5hIikpICU+JSAKICAuW251bWVyb09BQ0kgIT0gdmVjaW5hXSAlPiUgCiAgLlssIC5TRFtkaXN0YW5jaWEgPT0gbWluKGRpc3RhbmNpYSldLCBieSA9IC4obnVtZXJvT0FDSSldCgplc3RhY2lvbmVzIDwtIGVzdGFjaW9uZXNbZGlzdCwgb24gPSAuTkFUVVJBTF0KYGBgCgojIyBTZWd1bmRvIGludGVudG8KClBhcmEgc29ycHJlc2EgZGUgbmFkaWUsIG11Y2hhcyBkZSBsYXMgZXN0YWNpb25lcyBlbiBsYSBQYXRhZ29uaWEgZXN0YW4gYWlzbGFkYXMgZGVsIHJlc3RvLCBwYXJ0aWN1bGFybWVudGUgZW4gbGEgem9uYSBjZW50cmFsIGRvbmRlIGxhIGRlbnNpZGFkIGRlIHBvYmxhY2nDs24gZXMgYmFqaXNpbWEuIAoKYGBge3J9CmVzdGFjaW9uZXMgJT4lIAogIGdncGxvdChhZXMobG9uLCBsYXQpKSArCiAgZ2VvbV9zZihkYXRhID0gbWFwYSwgaW5oZXJpdC5hZXMgPSBGQUxTRSwgZmlsbCA9ICJncmV5OTgiKSArCiAgZ2VvbV9wb2ludChhZXMoY29sb3IgPSBkaXN0YW5jaWEvMTAwMCksIHNpemUgPSAxLCBhbHBoYSA9IDEpICsKICBnZW9tX3BvaW50KGRhdGEgPSBlc3RhY2lvbmVzW2Rpc3RhbmNpYSA+IDIwMCoxMDAwXSwgc2hhcGUgPSAyMSkgKwogIHNjYWxlX2NvbG9yX3ZpcmlkaXNfYyhicmVha3MgPSBzZXEoMCwgMzAwLCAyNSksIAogICAgICAgICAgICAgICAgICAgICAgICBndWlkZSA9IGd1aWRlX2NvbG9yc3RlcHMoYmFyd2lkdGggPSAwLjUsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBiYXJoZWlnaHQgPSAxNSksCiAgICAgICAgICAgICAgICAgICAgICAgIGRpcmVjdGlvbiA9IDEpICsKICAgIGxhYnMoeCA9IE5VTEwsIHkgPSBOVUxMLCBjb2xvciA9ICJba21dIiwKICAgICAgIHRpdGxlID0gIkRpc3RhbmNpYSBhIGxhIGVzdGFjacOzbiBtZXRlb3JvbMOzZ2ljYSBtw6FzIGNlcmNhbmEiLAogICAgICAgc3VidGl0bGUgPSAiOCBlc3RhY2lvbmVzIGVzdMOhbiBhIG3DoXMgZGUgMjAwIGttIGRlIGxhIHZlY2luYSBtw6FzIGNlcmNhbmEiLAogICAgICAgY2FwdGlvbiA9ICJGdWVudGU6IFNlcnZpY2lvIE1ldGVvcm9sw7NnaWNvIE5hY2lvbmFsIikgKwogIHRoZW1lX21pbmltYWwoYmFzZV9zaXplID0gOCwKICAgICAgICAgICAgICAgIGJhc2VfZmFtaWx5ID0gIlJvYm90byBDb25kZW5zZWQgTGlnaHQiKSArCiAgdGhlbWUocGxvdC50aXRsZS5wb3NpdGlvbiA9ICJwbG90IiwKICAgICAgICBwbG90LnRpdGxlID0gZWxlbWVudF90ZXh0KGZhY2UgPSAiYm9sZCIpKQoKI2dnc2F2ZSgiZGF5MS5wbmciLCBkZXZpY2UgPSBwbmcsIHR5cGUgPSAiY2Fpcm8iLCBiZyA9ICJ3aGl0ZSIsIHdpZHRoID0gMTAsIGhlaWdodCA9IDE4LCB1bml0cyA9ICJjbSIsIGRwaSA9IDE1MCkKYGBgCgo=</div>
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeSourceEmbed("day1.Rmd");
+});
+</script>
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
