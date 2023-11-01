@@ -1,0 +1,12 @@
+---
+title: "30 días de mapas!"
+output: html_document
+---
+
+El desafío de 30 días de mapas para 2023 ya arrancó. Con el desafío de crear 1 mapa por día siguiendo una determinada consigna. Obvio uso R. Y obvio muchos datos meteorológicos siempre que pueda.
+
+El tiempo dirá si logro hacer más de un mapa durante noviembre!
+
+Información sobre el proyecto: [30daymapchallenge.com/](https://30daymapchallenge.com/){.uri}
+
+![](https://raw.githubusercontent.com/tjukanovt/30DayMapChallenge/main/images/flyers/30dmc-2023.png){width="500"}

@@ -1,6 +1,5 @@
 ---
 title: 'Day 1: Points'
-author: "Pao Corrales"
 output:
   html_document:
     code_download: true
@@ -29,6 +28,8 @@ estaciones %>%
 
 mapa <- rnaturalearth::ne_states(c("Argentina", "Falkland Islands"), returnclass = "sf")
 ```
+
+## Primer intento
 
 El mapa que sigue cumple con la consigna de hoy pero no es particularmente interesante graficar solo la ubicación de las estaciones. Seguro nos da una idea de la inhomogeneidad de la ubicación de las estaciones que depende en gran medida de *donde vive la gente en Argentina*. 
 
@@ -61,6 +62,8 @@ dist <- reshape2::melt(dist, value.name = "distancia") %>%
 
 estaciones <- estaciones[dist, on = .NATURAL]
 ```
+
+## Segundo intento
 
 Para sorpresa de nadie, muchas de las estaciones en la Patagonia estan aisladas del resto, particularmente en la zona central donde la densidad de población es bajisima. 
 
