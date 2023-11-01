@@ -1,0 +1,11 @@
+navbar: 
+  title: "30 días de mapas 2023"
+  left: 
+  - text: Desafíos
+    menu: 
+      - text: "Día 1: Puntos"
+        href: day1.html
+output_dir: docs
+output:
+  html_document:
+    theme: united
