@@ -1,0 +1,88 @@
+---
+title: 'Day 1: Points'
+author: "Pao Corrales"
+output:
+  html_document:
+    code_download: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(ggplot2)
+library(data.table)
+library(geodist)
+```
+
+## Datos
+
+Ubicación de las estaciones meteorológicas del Servicio Meteorológico Nacional disponibles en: [www.smn.gob.ar/descarga-de-datos](https://www.smn.gob.ar/descarga-de-datos). Pero parsear ese archivo para usarlo en R es una cosa que se hace solo una vez en la vida por lo que vamos a usar los datos guardados en un repo, limpios y listos para usar. Porque la realidad es que no se han agregado estaciones nuevas. 
+
+```{r}
+estaciones <- fread("https://raw.githubusercontent.com/eliocamp/r-clima/fffb3fa596bc73afeeaa2a6296804da436e82fd3/datos/estaciones_smn.csv") %>% 
+  .[provincia != "ANTARTIDA"] # Para hacer un mapa mas chiquito sin la Antartida
+
+estaciones %>% 
+  head(10) %>% 
+  knitr::kable()
+
+mapa <- rnaturalearth::ne_states(c("Argentina", "Falkland Islands"), returnclass = "sf")
+```
+
+El mapa que sigue cumple con la consigna de hoy pero no es particularmente interesante graficar solo la ubicación de las estaciones. Seguro nos da una idea de la inhomogeneidad de la ubicación de las estaciones que depende en gran medida de *donde vive la gente en Argentina*. 
+
+```{r}
+ggplot(estaciones, aes(lon, lat)) +
+  geom_sf(data = mapa, inherit.aes = FALSE, fill = "grey98") +
+  geom_point(size = 1, color = "darkorange", alpha = 0.5) +
+  labs(x = NULL, y = NULL,
+       title = "Ubicación de las estaciones meteorológicas  \noficiales en Argentina",
+       caption = "Fuente: Servicio Meteorológico Nacional") +
+  theme_minimal(base_size = 8,
+                base_family = "Roboto Condensed Light") +
+  theme(plot.title.position = "plot")
+```
+
+Calculemos entonces la distancia de cada estación a su vecina más cercana. Cómo estamos trabajando con latitudes y longitudes en un globo, la distancia euclidia no es suficiente. Es decir, 13º de distancia al norte de Argentina no equivale a la misma distancia en kilómetros en el sur de la Patagonia. Necesitamos tener en cuenta esto y para eso la libreria `geodist` funciona barbaro.
+
+```{r}
+
+dist <- geodist(estaciones[, c("lon", "lat")],  measure = "geodesic") 
+
+colnames(dist) <- estaciones$numeroOACI
+rownames(dist) <- estaciones$numeroOACI
+
+dist <- reshape2::melt(dist, value.name = "distancia") %>% 
+  setDT() %>% 
+  setnames(c("Var1", "Var2"), c("numeroOACI", "vecina")) %>% 
+  .[numeroOACI != vecina] %>% 
+  .[, .SD[distancia == min(distancia)], by = .(numeroOACI)]
+
+estaciones <- estaciones[dist, on = .NATURAL]
+```
+
+Para sorpresa de nadie, muchas de las estaciones en la Patagonia estan aisladas del resto, particularmente en la zona central donde la densidad de población es bajisima. 
+
+```{r}
+estaciones %>% 
+  ggplot(aes(lon, lat)) +
+  geom_sf(data = mapa, inherit.aes = FALSE, fill = "grey98") +
+  geom_point(aes(color = distancia/1000), size = 1, alpha = 1) +
+  geom_point(data = estaciones[distancia > 200*1000], shape = 21) +
+  scale_color_viridis_c(breaks = seq(0, 300, 25), 
+                        guide = guide_colorsteps(barwidth = 0.5,
+                                                 barheight = 15),
+                        direction = 1) +
+    labs(x = NULL, y = NULL, color = "[km]",
+       title = "Distancia a la estación meteorológica más cercana",
+       subtitle = "8 estaciones están a más de 200 km de la vecina más cercana",
+       caption = "Fuente: Servicio Meteorológico Nacional") +
+  theme_minimal(base_size = 8,
+                base_family = "Roboto Condensed Light") +
+  theme(plot.title.position = "plot",
+        plot.title = element_text(face = "bold"))
+
+#ggsave("day1.png", device = png, type = "cairo", bg = "white", width = 10, height = 18, units = "cm", dpi = 150)
+```
+
