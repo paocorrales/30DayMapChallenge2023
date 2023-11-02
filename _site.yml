@@ -5,6 +5,8 @@ navbar:
     menu: 
       - text: "Día 1: Puntos"
         href: day1.html
+      - text: "Día 2: Líneas"
+        href: day2.html
 output_dir: docs
 output:
   html_document:
