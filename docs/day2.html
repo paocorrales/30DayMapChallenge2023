@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Dia 2: Lineas</title>
+
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/united.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script src="site_libs/navigation-1.1/sourceembed.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+<style type="text/css">
+#rmd-source-code {
+  display: none;
+}
+</style>
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">30 días de mapas 2023</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Desafíos
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="day1.html">Día 1: Puntos</a>
+    </li>
+    <li>
+      <a href="day2.html">Día 2: Líneas</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-download-source" href="#">Download Rmd</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Dia 2: Lineas</h1>
+
+</div>
+
+
+<div id="datos" class="section level2">
+<h2>Datos</h2>
+<p>Lo primero que imaigné cuando pensé en un mapa con lines son las
+rutas aereas en Argentina. Por supuesto encontrar esos datos no fue una
+tarea fácil. No porque no hubiera datos, al contrario encontré mucha
+información sobre pasajeros, rutas, vuelos, etc. Algunos en tablas
+publicadas en formato pdf. Otras tables en excel, una debajo de la otra
+en la misma hoja sin mucha explicación de que era cada cosa. En algunos
+casos eran datos derivados de fuentes oficiales, pero sin enformación
+sobre cómo habían sido procesados para llegar a tener la pinta que
+tenían.</p>
+<p>Finalmente me decidí por los datos de <a
+href="https://datos.transporte.gob.ar/dataset/aterrizajes-y-despegues-procesados-por-la-administracion-nacional-de-aviacion-civil-anac/archivo/e910fead-ade3-40ce-ae8f-cad2017aa007">Aterrizajes
+y despegues procesados por ANAC en el año 2023</a> que si bien tiene
+datos de vuelos individuales, puedo extraer la información de las rutas
+aereas activas y que empresas las usan.</p>
+<pre class="r"><code>vuelos &lt;- fread(&quot;https://datos.transporte.gob.ar/dataset/21038a1a-c3c7-4494-b76a-3a2a8fbb83b5/resource/e910fead-ade3-40ce-ae8f-cad2017aa007/download/202309_informe_ministerio.csv&quot;) %&gt;% 
+  janitor::clean_names()
+
+rutas &lt;- vuelos %&gt;% 
+  .[clasificacion_vuelo == &quot;Doméstico&quot; &amp; 
+      clase_de_vuelo_todos_los_vuelos == &quot;Regular&quot; &amp; 
+      tipo_de_movimiento == &quot;Despegue&quot;] %&gt;% 
+  setnames(&quot;origen_destino&quot;, &quot;destino&quot;) %&gt;% 
+  .[, ruta := paste0(aeropuerto, &quot;-&quot;, destino)] %&gt;% 
+  .[, .(ruta = unique(ruta)), by = .(aerolinea_nombre)] %&gt;% 
+  tidyr::separate(ruta, into = c(&quot;origen&quot;, &quot;destino&quot;), remove = FALSE) %&gt;% 
+  setDT() %&gt;% 
+  .[, ruta_inv := paste0(destino, &quot;-&quot;, origen)] 
+
+rutas_unicas &lt;- c()
+
+for (r in seq_len(nrow(rutas))) {
+  
+  if (!(rutas$ruta[r] %in% rutas_unicas) &amp; !(rutas$ruta_inv[r] %in% rutas_unicas)) {
+    rutas_unicas &lt;- c(rutas_unicas, rutas$ruta[r])
+    
+  }
+  
+}
+
+rutas &lt;- rutas[data.table(ruta = rutas_unicas), on = .NATURAL] %&gt;% 
+  .[aerolinea_nombre %in% c(&quot;AEROLINEAS ARGENTINAS SA&quot;, &quot;FB LÍNEAS AÉREAS - FLYBONDI&quot;, &quot;JETSMART AIRLINES S.A.&quot;)] %&gt;% 
+  .[, id_ruta := seq_len(.N)]</code></pre>
+<p>Todo muy ingenuo de mi parte, me llevo mucho más tiempo del que
+imaginaba poder quedarme con las rutas únicas. El problema es que
+“IGU-EZE” es lo mismo que “EZE-IGU” para este problema en particular.
+Pero finalmente y con un poco de fuerza bruta lo logré. También me quedo
+con las empresas principales, ya que hay muchas empresas privada con
+poquisimos vuelos que solo suman ruido.</p>
+<p>A mitad de camino me di cuenta que como esto se llama 30 días de
+MAPAS necesito también la ubicación geográfica de los aeropuertos para
+graficarlos y conectarlos según las rutas. El Ministerio de Transporte
+tenía los dtos publicados, el único detalle es que la columna latitud en
+ese dataset es en realidad la longitud. No hay remate.</p>
+<iframe src="https://mastodon.social/@eliocamp/111309713710598289/embed" width="400" height="500" allowfullscreen="allowfullscreen" sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-forms">
+</iframe>
+<pre class="r"><code>ubicación_aeropuertos &lt;- fread(&quot;https://datos.transporte.gob.ar/dataset/62b3fe5f-ffe6-4d8f-9d59-bfabe75d1ee8/resource/eb54e49e-9a5a-4614-91f4-526c650d0105/download/aeropuertos_detalle.csv&quot;) %&gt;% 
+  .[, .(local, latitud = longitud, longitud = latitud)]
+
+mapa &lt;- rnaturalearth::ne_countries(country = c(&quot;Argentina&quot;, &quot;Falkland Islands&quot;), returnclass = &quot;sf&quot;)
+
+origen &lt;- ubicación_aeropuertos[rutas, on = c(&quot;local&quot; = &quot;origen&quot;)] %&gt;% 
+  setnames(c(&quot;local&quot;), c(&quot;aeropuerto&quot;)) %&gt;% 
+  .[, destino := NULL]
+
+destino &lt;- ubicación_aeropuertos[rutas, on = c(&quot;local&quot; = &quot;destino&quot;)] %&gt;% 
+  setnames(c(&quot;local&quot;), c(&quot;aeropuerto&quot;)) %&gt;% 
+  .[, origen := NULL]</code></pre>
+<p>Finalmente, con el mapa, las rutas y la ubicación de los aeropuertos
+logré el gráfico que quería. Para graficar las rutas la clave está en
+agregar la columna <code>id_ruta</code> que luego sirve para graficar
+lineas por cada uno de esos grupos que se forman con el aeropuerto de
+origen y el de destino.</p>
+<pre class="r"><code>rbind(origen, destino) %&gt;% 
+  .[, aerolinea_nombre := forcats::fct_recode(aerolinea_nombre, 
+                                              &quot;Aerolineas Argentinas&quot; = &quot;AEROLINEAS ARGENTINAS SA&quot;, 
+                                              &quot;Flybondi&quot; = &quot;FB LÍNEAS AÉREAS - FLYBONDI&quot;,
+                                              &quot;JetSmart&quot; = &quot;JETSMART AIRLINES S.A.&quot;)] %&gt;% 
+  ggplot(aes(longitud, latitud)) +
+  geom_sf(data = mapa, inherit.aes = FALSE, fill = &quot;grey98&quot;) +
+  geom_point(data = ~copy(.x)[, aerolinea_nombre := NULL], color = &quot;grey80&quot;, alpha = 0.5, size = 1) + 
+  geom_line(data = ~copy(.x)[, aerolinea_nombre := NULL], aes(group = id_ruta), 
+            color = &quot;grey80&quot;, alpha = 0.5) +
+  geom_point(aes(color = aerolinea_nombre), alpha = 0.5, size = 1) + 
+  geom_line(aes(color = aerolinea_nombre, group = id_ruta),
+            position = position_dodge(width = 0.5)) +
+  scale_color_manual(values = c(&quot;#346EA3&quot;, &quot;#FFBF34&quot;, &quot;#AA1C2A&quot;), guide = NULL) +
+  facet_wrap(~aerolinea_nombre) +
+  labs(x = NULL, y = NULL, color = NULL,
+       title = &quot;Rutas aéreas en Argentina&quot;,
+       subtitle = &quot;El mercado está dominado por AA con 190 rutas&quot;,
+       caption = &quot;Fuente: Administración Nacional de Aviación Civil&quot;) +
+  theme_minimal(base_size = 10,
+                base_family = &quot;Roboto Condensed Light&quot;) +
+  theme(plot.title.position = &quot;plot&quot;,
+        plot.title = element_text(face = &quot;bold&quot;))</code></pre>
+<p><img src="day2_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<pre class="r"><code># ggsave(&quot;day2.png&quot;, device = png, type = &quot;cairo&quot;, bg = &quot;white&quot;, width = 25, height = 18, units = &quot;cm&quot;, dpi = 150)</code></pre>
+</div>
+
+<div id="rmd-source-code">LS0tCnRpdGxlOiAnRGlhIDI6IExpbmVhcycKb3V0cHV0OgogIGh0bWxfZG9jdW1lbnQ6CiAgICBjb2RlX2Rvd25sb2FkOiB0cnVlCi0tLQoKYGBge3Igc2V0dXAsIGluY2x1ZGU9RkFMU0V9CmtuaXRyOjpvcHRzX2NodW5rJHNldCgKCWVjaG8gPSBUUlVFLAoJbWVzc2FnZSA9IEZBTFNFLAoJd2FybmluZyA9IEZBTFNFCikKbGlicmFyeShkcGx5cikKbGlicmFyeShnZ3Bsb3QyKQpsaWJyYXJ5KGRhdGEudGFibGUpCmBgYAoKIyMgRGF0b3MKCkxvIHByaW1lcm8gcXVlIGltYWlnbsOpIGN1YW5kbyBwZW5zw6kgZW4gdW4gbWFwYSBjb24gbGluZXMgc29uIGxhcyBydXRhcyBhZXJlYXMgZW4gQXJnZW50aW5hLiBQb3Igc3VwdWVzdG8gZW5jb250cmFyIGVzb3MgZGF0b3Mgbm8gZnVlIHVuYSB0YXJlYSBmw6FjaWwuIE5vIHBvcnF1ZSBubyBodWJpZXJhIGRhdG9zLCBhbCBjb250cmFyaW8gZW5jb250csOpIG11Y2hhIGluZm9ybWFjacOzbiBzb2JyZSBwYXNhamVyb3MsIHJ1dGFzLCB2dWVsb3MsIGV0Yy4gQWxndW5vcyBlbiB0YWJsYXMgcHVibGljYWRhcyBlbiBmb3JtYXRvIHBkZi4gT3RyYXMgdGFibGVzIGVuIGV4Y2VsLCB1bmEgZGViYWpvIGRlIGxhIG90cmEgZW4gbGEgbWlzbWEgaG9qYSBzaW4gbXVjaGEgZXhwbGljYWNpw7NuIGRlIHF1ZSBlcmEgY2FkYSBjb3NhLiBFbiBhbGd1bm9zIGNhc29zIGVyYW4gZGF0b3MgZGVyaXZhZG9zIGRlIGZ1ZW50ZXMgb2ZpY2lhbGVzLCBwZXJvIHNpbiBlbmZvcm1hY2nDs24gc29icmUgY8OzbW8gaGFiw61hbiBzaWRvIHByb2Nlc2Fkb3MgcGFyYSBsbGVnYXIgYSB0ZW5lciBsYSBwaW50YSBxdWUgdGVuw61hbi4KCkZpbmFsbWVudGUgbWUgZGVjaWTDrSBwb3IgbG9zIGRhdG9zIGRlIFtBdGVycml6YWplcyB5IGRlc3BlZ3VlcyBwcm9jZXNhZG9zIHBvciBBTkFDIGVuIGVsIGHDsW8gMjAyM10oaHR0cHM6Ly9kYXRvcy50cmFuc3BvcnRlLmdvYi5hci9kYXRhc2V0L2F0ZXJyaXphamVzLXktZGVzcGVndWVzLXByb2Nlc2Fkb3MtcG9yLWxhLWFkbWluaXN0cmFjaW9uLW5hY2lvbmFsLWRlLWF2aWFjaW9uLWNpdmlsLWFuYWMvYXJjaGl2by9lOTEwZmVhZC1hZGUzLTQwY2UtYWU4Zi1jYWQyMDE3YWEwMDcpIHF1ZSBzaSBiaWVuIHRpZW5lIGRhdG9zIGRlIHZ1ZWxvcyBpbmRpdmlkdWFsZXMsIHB1ZWRvIGV4dHJhZXIgbGEgaW5mb3JtYWNpw7NuIGRlIGxhcyBydXRhcyBhZXJlYXMgYWN0aXZhcyB5IHF1ZSBlbXByZXNhcyBsYXMgdXNhbi4KCmBgYHtyfQp2dWVsb3MgPC0gZnJlYWQoImh0dHBzOi8vZGF0b3MudHJhbnNwb3J0ZS5nb2IuYXIvZGF0YXNldC8yMTAzOGExYS1jM2M3LTQ0OTQtYjc2YS0zYTJhOGZiYjgzYjUvcmVzb3VyY2UvZTkxMGZlYWQtYWRlMy00MGNlLWFlOGYtY2FkMjAxN2FhMDA3L2Rvd25sb2FkLzIwMjMwOV9pbmZvcm1lX21pbmlzdGVyaW8uY3N2IikgJT4lIAogIGphbml0b3I6OmNsZWFuX25hbWVzKCkKCnJ1dGFzIDwtIHZ1ZWxvcyAlPiUgCiAgLltjbGFzaWZpY2FjaW9uX3Z1ZWxvID09ICJEb23DqXN0aWNvIiAmIAogICAgICBjbGFzZV9kZV92dWVsb190b2Rvc19sb3NfdnVlbG9zID09ICJSZWd1bGFyIiAmIAogICAgICB0aXBvX2RlX21vdmltaWVudG8gPT0gIkRlc3BlZ3VlIl0gJT4lIAogIHNldG5hbWVzKCJvcmlnZW5fZGVzdGlubyIsICJkZXN0aW5vIikgJT4lIAogIC5bLCBydXRhIDo9IHBhc3RlMChhZXJvcHVlcnRvLCAiLSIsIGRlc3Rpbm8pXSAlPiUgCiAgLlssIC4ocnV0YSA9IHVuaXF1ZShydXRhKSksIGJ5ID0gLihhZXJvbGluZWFfbm9tYnJlKV0gJT4lIAogIHRpZHlyOjpzZXBhcmF0ZShydXRhLCBpbnRvID0gYygib3JpZ2VuIiwgImRlc3Rpbm8iKSwgcmVtb3ZlID0gRkFMU0UpICU+JSAKICBzZXREVCgpICU+JSAKICAuWywgcnV0YV9pbnYgOj0gcGFzdGUwKGRlc3Rpbm8sICItIiwgb3JpZ2VuKV0gCgpydXRhc191bmljYXMgPC0gYygpCgpmb3IgKHIgaW4gc2VxX2xlbihucm93KHJ1dGFzKSkpIHsKICAKICBpZiAoIShydXRhcyRydXRhW3JdICVpbiUgcnV0YXNfdW5pY2FzKSAmICEocnV0YXMkcnV0YV9pbnZbcl0gJWluJSBydXRhc191bmljYXMpKSB7CiAgICBydXRhc191bmljYXMgPC0gYyhydXRhc191bmljYXMsIHJ1dGFzJHJ1dGFbcl0pCiAgICAKICB9CiAgCn0KCnJ1dGFzIDwtIHJ1dGFzW2RhdGEudGFibGUocnV0YSA9IHJ1dGFzX3VuaWNhcyksIG9uID0gLk5BVFVSQUxdICU+JSAKICAuW2Flcm9saW5lYV9ub21icmUgJWluJSBjKCJBRVJPTElORUFTIEFSR0VOVElOQVMgU0EiLCAiRkIgTMONTkVBUyBBw4lSRUFTIC0gRkxZQk9OREkiLCAiSkVUU01BUlQgQUlSTElORVMgUy5BLiIpXSAlPiUgCiAgLlssIGlkX3J1dGEgOj0gc2VxX2xlbiguTildCmBgYAoKVG9kbyBtdXkgaW5nZW51byBkZSBtaSBwYXJ0ZSwgbWUgbGxldm8gbXVjaG8gbcOhcyB0aWVtcG8gZGVsIHF1ZSBpbWFnaW5hYmEgcG9kZXIgcXVlZGFybWUgY29uIGxhcyBydXRhcyDDum5pY2FzLiBFbCBwcm9ibGVtYSBlcyBxdWUgIklHVS1FWkUiIGVzIGxvIG1pc21vIHF1ZSAiRVpFLUlHVSIgcGFyYSBlc3RlIHByb2JsZW1hIGVuIHBhcnRpY3VsYXIuIFBlcm8gZmluYWxtZW50ZSB5IGNvbiB1biBwb2NvIGRlIGZ1ZXJ6YSBicnV0YSBsbyBsb2dyw6kuIFRhbWJpw6luIG1lIHF1ZWRvIGNvbiBsYXMgZW1wcmVzYXMgcHJpbmNpcGFsZXMsIHlhIHF1ZSBoYXkgbXVjaGFzIGVtcHJlc2FzIHByaXZhZGEgY29uIHBvcXVpc2ltb3MgdnVlbG9zIHF1ZSBzb2xvIHN1bWFuIHJ1aWRvLgoKQSBtaXRhZCBkZSBjYW1pbm8gbWUgZGkgY3VlbnRhIHF1ZSBjb21vIGVzdG8gc2UgbGxhbWEgMzAgZMOtYXMgZGUgTUFQQVMgbmVjZXNpdG8gdGFtYmnDqW4gbGEgdWJpY2FjacOzbiBnZW9ncsOhZmljYSBkZSBsb3MgYWVyb3B1ZXJ0b3MgcGFyYSBncmFmaWNhcmxvcyB5IGNvbmVjdGFybG9zIHNlZ8O6biBsYXMgcnV0YXMuIEVsIE1pbmlzdGVyaW8gZGUgVHJhbnNwb3J0ZSB0ZW7DrWEgbG9zIGR0b3MgcHVibGljYWRvcywgZWwgw7puaWNvIGRldGFsbGUgZXMgcXVlIGxhIGNvbHVtbmEgbGF0aXR1ZCBlbiBlc2UgZGF0YXNldCBlcyBlbiByZWFsaWRhZCBsYSBsb25naXR1ZC4gTm8gaGF5IHJlbWF0ZS4KCjxpZnJhbWUgc3JjPSJodHRwczovL21hc3RvZG9uLnNvY2lhbC9AZWxpb2NhbXAvMTExMzA5NzEzNzEwNTk4Mjg5L2VtYmVkIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjUwMCIgYWxsb3dmdWxsc2NyZWVuPSJhbGxvd2Z1bGxzY3JlZW4iIHNhbmRib3g9ImFsbG93LXNjcmlwdHMgYWxsb3ctc2FtZS1vcmlnaW4gYWxsb3ctcG9wdXBzIGFsbG93LXBvcHVwcy10by1lc2NhcGUtc2FuZGJveCBhbGxvdy1mb3JtcyI+PC9pZnJhbWU+CgpgYGB7cn0KdWJpY2FjacOzbl9hZXJvcHVlcnRvcyA8LSBmcmVhZCgiaHR0cHM6Ly9kYXRvcy50cmFuc3BvcnRlLmdvYi5hci9kYXRhc2V0LzYyYjNmZTVmLWZmZTYtNGQ4Zi05ZDU5LWJmYWJlNzVkMWVlOC9yZXNvdXJjZS9lYjU0ZTQ5ZS05YTVhLTQ2MTQtOTFmNC01MjZjNjUwZDAxMDUvZG93bmxvYWQvYWVyb3B1ZXJ0b3NfZGV0YWxsZS5jc3YiKSAlPiUgCiAgLlssIC4obG9jYWwsIGxhdGl0dWQgPSBsb25naXR1ZCwgbG9uZ2l0dWQgPSBsYXRpdHVkKV0KCm1hcGEgPC0gcm5hdHVyYWxlYXJ0aDo6bmVfY291bnRyaWVzKGNvdW50cnkgPSBjKCJBcmdlbnRpbmEiLCAiRmFsa2xhbmQgSXNsYW5kcyIpLCByZXR1cm5jbGFzcyA9ICJzZiIpCgpvcmlnZW4gPC0gdWJpY2FjacOzbl9hZXJvcHVlcnRvc1tydXRhcywgb24gPSBjKCJsb2NhbCIgPSAib3JpZ2VuIildICU+JSAKICBzZXRuYW1lcyhjKCJsb2NhbCIpLCBjKCJhZXJvcHVlcnRvIikpICU+JSAKICAuWywgZGVzdGlubyA6PSBOVUxMXQoKZGVzdGlubyA8LSB1YmljYWNpw7NuX2Flcm9wdWVydG9zW3J1dGFzLCBvbiA9IGMoImxvY2FsIiA9ICJkZXN0aW5vIildICU+JSAKICBzZXRuYW1lcyhjKCJsb2NhbCIpLCBjKCJhZXJvcHVlcnRvIikpICU+JSAKICAuWywgb3JpZ2VuIDo9IE5VTExdCmBgYAoKRmluYWxtZW50ZSwgY29uIGVsIG1hcGEsIGxhcyBydXRhcyB5IGxhIHViaWNhY2nDs24gZGUgbG9zIGFlcm9wdWVydG9zIGxvZ3LDqSBlbCBncsOhZmljbyBxdWUgcXVlcsOtYS4gUGFyYSBncmFmaWNhciBsYXMgcnV0YXMgbGEgY2xhdmUgZXN0w6EgZW4gYWdyZWdhciBsYSBjb2x1bW5hIGBpZF9ydXRhYCBxdWUgbHVlZ28gc2lydmUgcGFyYSBncmFmaWNhciBsaW5lYXMgcG9yIGNhZGEgdW5vIGRlIGVzb3MgZ3J1cG9zIHF1ZSBzZSBmb3JtYW4gY29uIGVsIGFlcm9wdWVydG8gZGUgb3JpZ2VuICB5IGVsIGRlIGRlc3Rpbm8uIAoKYGBge3J9CnJiaW5kKG9yaWdlbiwgZGVzdGlubykgJT4lIAogIC5bLCBhZXJvbGluZWFfbm9tYnJlIDo9IGZvcmNhdHM6OmZjdF9yZWNvZGUoYWVyb2xpbmVhX25vbWJyZSwgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAiQWVyb2xpbmVhcyBBcmdlbnRpbmFzIiA9ICJBRVJPTElORUFTIEFSR0VOVElOQVMgU0EiLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJGbHlib25kaSIgPSAiRkIgTMONTkVBUyBBw4lSRUFTIC0gRkxZQk9OREkiLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIkpldFNtYXJ0IiA9ICJKRVRTTUFSVCBBSVJMSU5FUyBTLkEuIildICU+JSAKICBnZ3Bsb3QoYWVzKGxvbmdpdHVkLCBsYXRpdHVkKSkgKwogIGdlb21fc2YoZGF0YSA9IG1hcGEsIGluaGVyaXQuYWVzID0gRkFMU0UsIGZpbGwgPSAiZ3JleTk4IikgKwogIGdlb21fcG9pbnQoZGF0YSA9IH5jb3B5KC54KVssIGFlcm9saW5lYV9ub21icmUgOj0gTlVMTF0sIGNvbG9yID0gImdyZXk4MCIsIGFscGhhID0gMC41LCBzaXplID0gMSkgKyAKICBnZW9tX2xpbmUoZGF0YSA9IH5jb3B5KC54KVssIGFlcm9saW5lYV9ub21icmUgOj0gTlVMTF0sIGFlcyhncm91cCA9IGlkX3J1dGEpLCAKICAgICAgICAgICAgY29sb3IgPSAiZ3JleTgwIiwgYWxwaGEgPSAwLjUpICsKICBnZW9tX3BvaW50KGFlcyhjb2xvciA9IGFlcm9saW5lYV9ub21icmUpLCBhbHBoYSA9IDAuNSwgc2l6ZSA9IDEpICsgCiAgZ2VvbV9saW5lKGFlcyhjb2xvciA9IGFlcm9saW5lYV9ub21icmUsIGdyb3VwID0gaWRfcnV0YSksCiAgICAgICAgICAgIHBvc2l0aW9uID0gcG9zaXRpb25fZG9kZ2Uod2lkdGggPSAwLjUpKSArCiAgc2NhbGVfY29sb3JfbWFudWFsKHZhbHVlcyA9IGMoIiMzNDZFQTMiLCAiI0ZGQkYzNCIsICIjQUExQzJBIiksIGd1aWRlID0gTlVMTCkgKwogIGZhY2V0X3dyYXAofmFlcm9saW5lYV9ub21icmUpICsKICBsYWJzKHggPSBOVUxMLCB5ID0gTlVMTCwgY29sb3IgPSBOVUxMLAogICAgICAgdGl0bGUgPSAiUnV0YXMgYcOpcmVhcyBlbiBBcmdlbnRpbmEiLAogICAgICAgc3VidGl0bGUgPSAiRWwgbWVyY2FkbyBlc3TDoSBkb21pbmFkbyBwb3IgQUEgY29uIDE5MCBydXRhcyIsCiAgICAgICBjYXB0aW9uID0gIkZ1ZW50ZTogQWRtaW5pc3RyYWNpw7NuIE5hY2lvbmFsIGRlIEF2aWFjacOzbiBDaXZpbCIpICsKICB0aGVtZV9taW5pbWFsKGJhc2Vfc2l6ZSA9IDEwLAogICAgICAgICAgICAgICAgYmFzZV9mYW1pbHkgPSAiUm9ib3RvIENvbmRlbnNlZCBMaWdodCIpICsKICB0aGVtZShwbG90LnRpdGxlLnBvc2l0aW9uID0gInBsb3QiLAogICAgICAgIHBsb3QudGl0bGUgPSBlbGVtZW50X3RleHQoZmFjZSA9ICJib2xkIikpCgojIGdnc2F2ZSgiZGF5Mi5wbmciLCBkZXZpY2UgPSBwbmcsIHR5cGUgPSAiY2Fpcm8iLCBiZyA9ICJ3aGl0ZSIsIHdpZHRoID0gMjUsIGhlaWdodCA9IDE4LCB1bml0cyA9ICJjbSIsIGRwaSA9IDE1MCkKYGBgCg==</div>
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeSourceEmbed("day2.Rmd");
+});
+</script>
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
