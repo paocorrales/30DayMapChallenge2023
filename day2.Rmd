@@ -1,0 +1,105 @@
+---
+title: 'Dia 2: Lineas'
+output:
+  html_document:
+    code_download: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+library(dplyr)
+library(ggplot2)
+library(data.table)
+```
+
+## Datos
+
+Lo primero que imaigné cuando pensé en un mapa con lines son las rutas aereas en Argentina. Por supuesto encontrar esos datos no fue una tarea fácil. No porque no hubiera datos, al contrario encontré mucha información sobre pasajeros, rutas, vuelos, etc. Algunos en tablas publicadas en formato pdf. Otras tables en excel, una debajo de la otra en la misma hoja sin mucha explicación de que era cada cosa. En algunos casos eran datos derivados de fuentes oficiales, pero sin enformación sobre cómo habían sido procesados para llegar a tener la pinta que tenían.
+
+Finalmente me decidí por los datos de [Aterrizajes y despegues procesados por ANAC en el año 2023](https://datos.transporte.gob.ar/dataset/aterrizajes-y-despegues-procesados-por-la-administracion-nacional-de-aviacion-civil-anac/archivo/e910fead-ade3-40ce-ae8f-cad2017aa007) que si bien tiene datos de vuelos individuales, puedo extraer la información de las rutas aereas activas y que empresas las usan.
+
+```{r}
+vuelos <- fread("https://datos.transporte.gob.ar/dataset/21038a1a-c3c7-4494-b76a-3a2a8fbb83b5/resource/e910fead-ade3-40ce-ae8f-cad2017aa007/download/202309_informe_ministerio.csv") %>% 
+  janitor::clean_names()
+
+rutas <- vuelos %>% 
+  .[clasificacion_vuelo == "Doméstico" & 
+      clase_de_vuelo_todos_los_vuelos == "Regular" & 
+      tipo_de_movimiento == "Despegue"] %>% 
+  setnames("origen_destino", "destino") %>% 
+  .[, ruta := paste0(aeropuerto, "-", destino)] %>% 
+  .[, .(ruta = unique(ruta)), by = .(aerolinea_nombre)] %>% 
+  tidyr::separate(ruta, into = c("origen", "destino"), remove = FALSE) %>% 
+  setDT() %>% 
+  .[, ruta_inv := paste0(destino, "-", origen)] 
+
+rutas_unicas <- c()
+
+for (r in seq_len(nrow(rutas))) {
+  
+  if (!(rutas$ruta[r] %in% rutas_unicas) & !(rutas$ruta_inv[r] %in% rutas_unicas)) {
+    rutas_unicas <- c(rutas_unicas, rutas$ruta[r])
+    
+  }
+  
+}
+
+rutas <- rutas[data.table(ruta = rutas_unicas), on = .NATURAL] %>% 
+  .[aerolinea_nombre %in% c("AEROLINEAS ARGENTINAS SA", "FB LÍNEAS AÉREAS - FLYBONDI", "JETSMART AIRLINES S.A.")] %>% 
+  .[, id_ruta := seq_len(.N)]
+```
+
+Todo muy ingenuo de mi parte, me llevo mucho más tiempo del que imaginaba poder quedarme con las rutas únicas. El problema es que "IGU-EZE" es lo mismo que "EZE-IGU" para este problema en particular. Pero finalmente y con un poco de fuerza bruta lo logré. También me quedo con las empresas principales, ya que hay muchas empresas privada con poquisimos vuelos que solo suman ruido.
+
+A mitad de camino me di cuenta que como esto se llama 30 días de MAPAS necesito también la ubicación geográfica de los aeropuertos para graficarlos y conectarlos según las rutas. El Ministerio de Transporte tenía los dtos publicados, el único detalle es que la columna latitud en ese dataset es en realidad la longitud. No hay remate.
+
+<iframe src="https://mastodon.social/@eliocamp/111309713710598289/embed" width="400" height="500" allowfullscreen="allowfullscreen" sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-forms"></iframe>
+
+```{r}
+ubicación_aeropuertos <- fread("https://datos.transporte.gob.ar/dataset/62b3fe5f-ffe6-4d8f-9d59-bfabe75d1ee8/resource/eb54e49e-9a5a-4614-91f4-526c650d0105/download/aeropuertos_detalle.csv") %>% 
+  .[, .(local, latitud = longitud, longitud = latitud)]
+
+mapa <- rnaturalearth::ne_countries(country = c("Argentina", "Falkland Islands"), returnclass = "sf")
+
+origen <- ubicación_aeropuertos[rutas, on = c("local" = "origen")] %>% 
+  setnames(c("local"), c("aeropuerto")) %>% 
+  .[, destino := NULL]
+
+destino <- ubicación_aeropuertos[rutas, on = c("local" = "destino")] %>% 
+  setnames(c("local"), c("aeropuerto")) %>% 
+  .[, origen := NULL]
+```
+
+Finalmente, con el mapa, las rutas y la ubicación de los aeropuertos logré el gráfico que quería. Para graficar las rutas la clave está en agregar la columna `id_ruta` que luego sirve para graficar lineas por cada uno de esos grupos que se forman con el aeropuerto de origen  y el de destino. 
+
+```{r}
+rbind(origen, destino) %>% 
+  .[, aerolinea_nombre := forcats::fct_recode(aerolinea_nombre, 
+                                              "Aerolineas Argentinas" = "AEROLINEAS ARGENTINAS SA", 
+                                              "Flybondi" = "FB LÍNEAS AÉREAS - FLYBONDI",
+                                              "JetSmart" = "JETSMART AIRLINES S.A.")] %>% 
+  ggplot(aes(longitud, latitud)) +
+  geom_sf(data = mapa, inherit.aes = FALSE, fill = "grey98") +
+  geom_point(data = ~copy(.x)[, aerolinea_nombre := NULL], color = "grey80", alpha = 0.5, size = 1) + 
+  geom_line(data = ~copy(.x)[, aerolinea_nombre := NULL], aes(group = id_ruta), 
+            color = "grey80", alpha = 0.5) +
+  geom_point(aes(color = aerolinea_nombre), alpha = 0.5, size = 1) + 
+  geom_line(aes(color = aerolinea_nombre, group = id_ruta),
+            position = position_dodge(width = 0.5)) +
+  scale_color_manual(values = c("#346EA3", "#FFBF34", "#AA1C2A"), guide = NULL) +
+  facet_wrap(~aerolinea_nombre) +
+  labs(x = NULL, y = NULL, color = NULL,
+       title = "Rutas aéreas en Argentina",
+       subtitle = "El mercado está dominado por AA con 190 rutas",
+       caption = "Fuente: Administración Nacional de Aviación Civil") +
+  theme_minimal(base_size = 10,
+                base_family = "Roboto Condensed Light") +
+  theme(plot.title.position = "plot",
+        plot.title = element_text(face = "bold"))
+
+# ggsave("day2.png", device = png, type = "cairo", bg = "white", width = 25, height = 18, units = "cm", dpi = 150)
+```
