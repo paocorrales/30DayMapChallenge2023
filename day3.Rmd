@@ -7,9 +7,9 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
-	echo = TRUE,
-	message = FALSE,
-	warning = FALSE
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE
 )
 library(dplyr)
 library(ggplot2)
@@ -75,16 +75,16 @@ estaciones %>%
   geom_point(size = 0.5, alpha = 1) +
   scale_fill_viridis_c(option = "A", guide = NULL) +
   coord_sf(expand = FALSE) +
-labs(x = NULL, y = NULL, fill = NULL,
+  labs(x = NULL, y = NULL, fill = NULL,
        title = "Área de influencia de las estaciones meteorológicas",
        subtitle = "En la patagonia los datos de las estaciones\n'representan' un área enorme",
        caption = "Fuente: Servicio Meteorológico Nacional") +
   theme_void(base_size = 10,
-                base_family = "Roboto Condensed Light") +
+             base_family = "Roboto Condensed Light") +
   theme(plot.title.position = "plot",
         plot.title = element_text(face = "bold"))
 
-ggsave("day3.png", device = png, type = "cairo", bg = "white", width = 10, height = 18, units = "cm", dpi = 150)
+# ggsave("day3.png", device = png, type = "cairo", bg = "white", width = 10, height = 18, units = "cm", dpi = 150)
 ```
 
 Pero además este gráfico me hizo notar que algunas estaciones estaban flotando en el Atlántico o del lado de Brasil. Y revisando los datos, resulta que hay un error a la hora de convertir las coordenadas originales en grados y minutos a grados decimales. Así que no confien en mis datos.

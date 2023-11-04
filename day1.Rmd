@@ -77,7 +77,7 @@ estaciones %>%
                         guide = guide_colorsteps(barwidth = 0.5,
                                                  barheight = 15),
                         direction = 1) +
-    labs(x = NULL, y = NULL, color = "[km]",
+  labs(x = NULL, y = NULL, color = "[km]",
        title = "Distancia a la estación meteorológica más cercana",
        subtitle = "8 estaciones están a más de 200 km de la vecina más cercana",
        caption = "Fuente: Servicio Meteorológico Nacional") +
