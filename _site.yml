@@ -9,6 +9,8 @@ navbar:
         href: day2.html
       - text: "Día 3: Polígonos"
         href: day3.html
+      - text: "Día 4: Un mapa erroneo"
+        href: day4.html
 output_dir: docs
 output:
   html_document:

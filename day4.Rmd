@@ -1,0 +1,32 @@
+---
+title: 'Día 4: Un mapa malo'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+```
+
+Hoy la consigna es un mapa erroneo y en parte porque es sábado, mi mama erroneo es simple: solo los polígonos que devuelve `rnaturalearth` cuando le pedis las provincias de Argentina. 
+
+El error es sutíl pero controversial.
+
+```{r}
+mapa <- rnaturalearth::ne_states(country = "Argentina", returnclass = "sf")
+
+
+ggplot(mapa, aes(geometry = geometry)) +
+  geom_sf(fill = "grey98") +
+    labs(x = NULL, y = NULL, color = "[km]",
+       title = "Mapa de la República Argentina",
+       subtitle = "Día 4 - Un mapa incorrecto") +
+  theme_minimal(base_size = 10,
+                base_family = "Roboto Condensed Light") +
+  theme(plot.title.position = "plot",
+        plot.title = element_text(face = "bold"))
+
+# ggsave("day4.png", device = png, type = "cairo", bg = "white", width = 10, height = 18, units = "cm", dpi = 150)
+```
+
