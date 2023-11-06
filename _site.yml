@@ -11,6 +11,10 @@ navbar:
         href: day3.html
       - text: "Día 4: Un mapa erroneo"
         href: day4.html
+      - text: "Día 5: Mapa analógico"
+        href: day5.html
+      - text: "Día 6: Asia"
+        href: day6.html
 output_dir: docs
 output:
   html_document:
