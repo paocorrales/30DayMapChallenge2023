@@ -1,0 +1,14 @@
+---
+title: 'Día 5: Mapa analógico'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+No datos, no R para el mapa de hoy. Solo Clem que decidió probar el rompecabezas como colchón.
+
+![](https://cdn.fosstodon.org/media_attachments/files/111/359/294/313/658/623/original/d8e8f9f60d29beab.jpg){width="500"}
+
+![](https://cdn.fosstodon.org/media_attachments/files/111/359/297/707/562/268/original/4746acc76facf08f.jpg){width="500"}
