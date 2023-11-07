@@ -1,0 +1,71 @@
+---
+title: "Día 7"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
+library(dplyr)
+library(ggplot2)
+library(data.table)
+
+library(sf)
+```
+
+## Datos
+
+Por alguna razón cuando leí "Navegación" pensé en el viaje del HMS Beagle. Para mi este hito de la historia es importante pero por otras razones. Para mi no tiene que ver con Darwin y la teoría de la Evolución que empezó a construir durante el viaje, tiene que ver con la meteorología. Como es de esperarse, la meteorología era muy importante a la hora de sobrevivir un cruze al Atlántico pero era una ciencia en pañales. Fitz Roy, capitán del Beagle en ese momento le interesaba mucho la meterología, tenía registros super meticulosos del estado del tiempo y de a poco fue encontrando patrones que le ayudaban a "predecir" el tiempo.
+
+Encontré datos del viaje en una web de la Universidad de Stanford. No había trabajando con datos en formato kmz pero `sf` hizo su magia.
+
+```{r}
+beagle <- st_read("https://web.stanford.edu/dept/humbio/googleMaps/Voyage_of_the_Beagle.kmz")
+
+mapa <- rnaturalearth::ne_coastline(returnclass = "sf")
+```
+
+Exploré mucho los datos y los transformé varias veces intentando entender como hacer lo que había imaginado. Pero varias horas después y con mucho trabajo por delante esto es lo que salió.
+
+```{r}
+beagle %>% 
+  mutate(as_tibble(st_coordinates(geometry))) %>%
+  tidyr::separate(Name, into = c("order", "place"), remove = FALSE) %>% 
+  mutate(order = as.numeric(order)) %>% 
+  filter(order <= 25) %>% 
+  mutate(descripcion_es = c("En la mañana del 27 de diciembre de 1831, el H.M.S. Beagle, con una tripulación de setenta y tres hombres, zarpó del puerto de Plymouth bajo un viento de levante en calma y una llovizna.",
+                            "Darwin se mareó casi de inmediato y empezó a tener dudas sobre el viaje.",
+                            rep(NA, 3),
+                            "El Beagle cruzó el ecuador el 16 de febrero",
+                            rep(NA, 4),
+                            "El capitán FitzRoy, Darwin y el Sr. Harris fueron a tierra para visitar el Fuerte Argentina, un bastión militar situado al sur de Bahía Blanca.",
+                            rep(NA, 2),
+                            "Tierra del Fuego fue avistada el 18 de diciembre.",
+                            rep(NA, 10))) %>% 
+  ggplot(aes(X, Y)) +
+  geom_sf(data = mapa, fill = NA, linewidth = 0.2, inherit.aes = FALSE) +
+  geom_point(color = "darkorange") +
+  ggforce::geom_mark_circle(aes(description = descripcion_es, 
+                                group = order, 
+                                filter = !is.na(descripcion_es)), 
+                            color = NA, expand = 0, label.fontsize = 9,
+                            label.fill = "grey97") +
+  geom_path(color = "darkorange", linewidth = 0.3) +
+  
+  coord_sf(xlim = c(-120, 70)) +
+  labs(x = NULL, y = NULL, color = "[km]",
+       title = "El viaje del HMS Beagle",
+       subtitle = "O la parte que le tocó a Sudamérica",
+       caption = "Fuente: Stanford University") +
+  theme_minimal(base_size = 8,
+                base_family = "Roboto Condensed Light") +
+  theme(plot.title.position = "plot",
+        plot.title = element_text(face = "bold"))
+
+# ggsave("day7.png", device = png, type = "cairo", bg = "white", width = 17, height = 15, units = "cm", dpi = 150)
+```
+
+Definitivamente me molestan las lineas rectas y tengo que aprender como "dibujar" lineas curvas. Tal vez con otro desafío durante noviembre.
