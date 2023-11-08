@@ -11,7 +11,7 @@
 
 
 
-<title>Día 7</title>
+<title>Día 6: Asia</title>
 
 <script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -287,78 +287,69 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Día 7</h1>
+<h1 class="title toc-ignore">Día 6: Asia</h1>
 
 </div>
 
 
 <div id="datos" class="section level2">
 <h2>Datos</h2>
-<p>Por alguna razón cuando leí “Navegación” pensé en el viaje del HMS
-Beagle. Para mi este hito de la historia es importante pero por otras
-razones. Para mi no tiene que ver con Darwin y la teoría de la Evolución
-que empezó a construir durante el viaje, tiene que ver con la
-meteorología. Como es de esperarse, la meteorología era muy importante a
-la hora de sobrevivir un cruze al Atlántico pero era una ciencia en
-pañales. Fitz Roy, capitán del Beagle en ese momento le interesaba mucho
-la meterología, tenía registros super meticulosos del estado del tiempo
-y de a poco fue encontrando patrones que le ayudaban a “predecir” el
-tiempo.</p>
-<p>Encontré datos del viaje en una web de la Universidad de Stanford. No
-había trabajando con datos en formato kmz pero <code>sf</code> hizo su
-magia.</p>
-<pre class="r"><code>beagle &lt;- st_read(&quot;https://web.stanford.edu/dept/humbio/googleMaps/Voyage_of_the_Beagle.kmz&quot;)</code></pre>
-<pre><code>## Reading layer `Charles Darwin and the Voyage of the Beagle v3&#39; from data source 
-##   `https://web.stanford.edu/dept/humbio/googleMaps/Voyage_of_the_Beagle.kmz&#39; 
-##   using driver `LIBKML&#39;
-## Simple feature collection with 42 features and 11 fields
-## Geometry type: POINT
-## Dimension:     XYZ
-## Bounding box:  xmin: -149.6272 ymin: -56.3795 xmax: 174.5275 ymax: 50.35439
-## z_range:       zmin: -2.121969e-09 zmax: 230.1434
-## Geodetic CRS:  WGS 84</code></pre>
-<pre class="r"><code>mapa &lt;- rnaturalearth::ne_coastline(returnclass = &quot;sf&quot;)</code></pre>
-<p>Exploré mucho los datos y los transformé varias veces intentando
-entender como hacer lo que había imaginado. Pero varias horas después y
-con mucho trabajo por delante esto es lo que salió.</p>
-<pre class="r"><code>beagle %&gt;% 
-  mutate(as_tibble(st_coordinates(geometry))) %&gt;%
-  tidyr::separate(Name, into = c(&quot;order&quot;, &quot;place&quot;), remove = FALSE) %&gt;% 
-  mutate(order = as.numeric(order)) %&gt;% 
-  filter(order &lt;= 25) %&gt;% 
-  mutate(descripcion_es = c(&quot;En la mañana del 27 de diciembre de 1831, el H.M.S. Beagle, con una tripulación de setenta y tres hombres, zarpó del puerto de Plymouth bajo un viento de levante en calma y una llovizna.&quot;,
-                            &quot;Darwin se mareó casi de inmediato y empezó a tener dudas sobre el viaje.&quot;,
-                            rep(NA, 3),
-                            &quot;El Beagle cruzó el ecuador el 16 de febrero&quot;,
-                            rep(NA, 4),
-                            &quot;El capitán FitzRoy, Darwin y el Sr. Harris fueron a tierra para visitar el Fuerte Argentina, un bastión militar situado al sur de Bahía Blanca.&quot;,
-                            rep(NA, 2),
-                            &quot;Tierra del Fuego fue avistada el 18 de diciembre.&quot;,
-                            rep(NA, 10))) %&gt;% 
-  ggplot(aes(X, Y)) +
-  geom_sf(data = mapa, fill = NA, linewidth = 0.2, inherit.aes = FALSE) +
-  geom_point(color = &quot;darkorange&quot;) +
-  ggforce::geom_mark_circle(aes(description = descripcion_es, 
-                                group = order, 
-                                filter = !is.na(descripcion_es)), 
-                            color = NA, expand = 0, label.fontsize = 9,
-                            label.fill = &quot;grey97&quot;) +
-  geom_path(color = &quot;darkorange&quot;, linewidth = 0.3) +
+<p>Hoy los datos vuelven a ser de Worldclim historical climate data,
+igual que para el día 6, me quedo con la temperatura máxima de julio
+para ver que tan mal se ve el verano para Africa a finales de siglo.</p>
+<pre class="r"><code>file1 &lt;- &quot;datos/wc2.1_10m_tmax_ACCESS-CM2_ssp585_2021-2040.tif&quot;
+
+if (!file.exists(file1)) {
   
-  coord_sf(xlim = c(-120, 70)) +
-  labs(x = NULL, y = NULL, color = &quot;[km]&quot;,
-       title = &quot;El viaje del HMS Beagle&quot;,
-       subtitle = &quot;O la parte que le tocó a Sudamérica&quot;,
-       caption = &quot;Fuente: Stanford University&quot;) +
-  theme_minimal(base_size = 8,
-                base_family = &quot;Roboto Condensed Light&quot;) +
+  download.file(&quot;https://geodata.ucdavis.edu/cmip6/10m/ACCESS-CM2/ssp585/wc2.1_10m_tmax_ACCESS-CM2_ssp585_2021-2040.tif&quot;,
+                destfile = file1)
+  
+}
+
+file2 &lt;- &quot;datos/wc2.1_10m_tmax_ACCESS-CM2_ssp585_2081-2100.tif&quot;
+
+if (!file.exists(file2)) {
+  
+  download.file(&quot;https://geodata.ucdavis.edu/cmip6/10m/ACCESS-CM2/ssp585/wc2.1_10m_tmax_ACCESS-CM2_ssp585_2081-2100.tif&quot;,
+                destfile = file2)
+  
+}
+
+tmp1 &lt;- raster(file1, band = 7)
+tmp2 &lt;- raster(file2, band = 7)
+
+data &lt;- data.table(rasterToPoints(tmp1))[data.table(rasterToPoints(tmp2)), on = c(&quot;x&quot;, &quot;y&quot;)] %&gt;% 
+  .[, diff := i.tmax01 - tmax01]
+
+mapa_africa &lt;- rnaturalearth::ne_countries(continent = &quot;Africa&quot;, returnclass = &quot;sf&quot;,
+                                         scale = 110) |&gt; 
+  sf::st_make_valid()</code></pre>
+<p>Si bien restar la estimación actual (2021-2040) con la estimación
+futura (2080-2100) no es del todo válido (debería haber buscado
+observaciones para determinar el periodo actual), nos da una idea de la
+que se nos viene si los gobiernos no hacen nada para reducir las
+emisiones de gases de efecto invernadero.</p>
+<p>El escenario que elegí SSP5 8.5º es el <a
+href="https://www.carbonbrief.org/explainer-the-high-emissions-rcp8-5-global-warming-scenario/">más
+pesimista</a> y espero que no lleguemos a eso.</p>
+<pre class="r"><code>data %&gt;%
+  .[x %between% c(-20, 55) &amp; y %between% c(-40, 37)] %&gt;%
+  ggplot(aes(x, y)) +
+  geom_contour_fill(aes(z = diff, fill = after_stat(level))) +
+  geom_sf(data = mapa_africa, inherit.aes = FALSE, fill = NA, color = &quot;white&quot;) +
+  scale_fill_viridis_d(option = &quot;B&quot;, guide = guide_colorsteps(barwidth = 0.5,
+                                                 barheight = 15)) +
+  coord_sf(expand = FALSE) +
+  labs(x = NULL, y = NULL, fill = NULL,
+       title = &quot;Aumento de la temperatura media para julio en Africa&quot;,
+       subtitle = &quot;Diferencia 2080-2010 y 2021-2040 para el escenario SSP5-8.5º&quot;,
+       caption = &quot;Fuente: worldclim.org (CMIP6)&quot;) +
+  theme_minimal(base_size = 10,
+                base_family = &quot;Roboto Condensed&quot;) +
   theme(plot.title.position = &quot;plot&quot;,
         plot.title = element_text(face = &quot;bold&quot;))</code></pre>
-<p><img src="day7_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
-<pre class="r"><code># ggsave(&quot;day7.png&quot;, device = png, type = &quot;cairo&quot;, bg = &quot;white&quot;, width = 17, height = 15, units = &quot;cm&quot;, dpi = 150)</code></pre>
-<p>Definitivamente me molestan las lineas rectas y tengo que aprender
-como “dibujar” lineas curvas. Tal vez con otro desafío durante
-noviembre.</p>
+<p><img src="day8_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<pre class="r"><code># ggsave(&quot;day8.png&quot;, device = png, type = &quot;cairo&quot;, bg = &quot;white&quot;, width = 13, height = 13, units = &quot;cm&quot;, dpi = 150)</code></pre>
 </div>
 
 

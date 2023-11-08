@@ -270,6 +270,9 @@ $(document).ready(function () {
     <li>
       <a href="day7.html">Día 7: Navegación</a>
     </li>
+    <li>
+      <a href="day8.html">Día 8: Africa</a>
+    </li>
   </ul>
 </li>
       </ul>
@@ -322,8 +325,8 @@ if (!file.exists(file2)) {
   
 }
 
-tmp1 &lt;- raster(file1, band = 1)
-tmp2 &lt;- raster(file2, band = 1)
+tmp1 &lt;- raster(file1, band = 7)
+tmp2 &lt;- raster(file2, band = 7)
 
 data &lt;- data.table(rasterToPoints(tmp1))[data.table(rasterToPoints(tmp2)), on = c(&quot;x&quot;, &quot;y&quot;)] %&gt;% 
   .[, diff := i.tmax01 - tmax01]
