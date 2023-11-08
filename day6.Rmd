@@ -42,8 +42,8 @@ if (!file.exists(file2)) {
   
 }
 
-tmp1 <- raster(file1, band = 1)
-tmp2 <- raster(file2, band = 1)
+tmp1 <- raster(file1, band = 7)
+tmp2 <- raster(file2, band = 7)
 
 data <- data.table(rasterToPoints(tmp1))[data.table(rasterToPoints(tmp2)), on = c("x", "y")] %>% 
   .[, diff := i.tmax01 - tmax01]
