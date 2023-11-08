@@ -54,22 +54,22 @@ El escenario que elegí SSP5 8.5º es el [más pesimista](https://www.carbonbrie
 
 ```{r}
 data %>%
-  # .[x %between% c(25, 145) & y %between% c(-10, 56)] %>%
+  .[x %between% c(-20, 55) & y %between% c(-40, 37)] %>%
   ggplot(aes(x, y)) +
-  geom_contour_fill(aes(z = diff, fill = after_stat(level)), clip = mapa_africa) +
-  # geom_sf(data = mapa_africa, inherit.aes = FALSE, fill = NA, color = "white") +
-  # scale_fill_viridis_d(option = "B", guide = guide_colorsteps(barwidth = 0.5,
-  #                                                barheight = 15)) +
-  # coord_sf(expand = FALSE) +
+  geom_contour_fill(aes(z = diff, fill = after_stat(level))) +
+  geom_sf(data = mapa_africa, inherit.aes = FALSE, fill = NA, color = "white") +
+  scale_fill_viridis_d(option = "B", guide = guide_colorsteps(barwidth = 0.5,
+                                                 barheight = 15)) +
+  coord_sf(expand = FALSE) +
   labs(x = NULL, y = NULL, fill = NULL,
-       title = "Aumento de la temperatura media para el verano en Asia",
+       title = "Aumento de la temperatura media para julio en Africa",
        subtitle = "Diferencia 2080-2010 y 2021-2040 para el escenario SSP5-8.5º",
        caption = "Fuente: worldclim.org (CMIP6)") +
-  # theme_minimal(base_size = 10,
-  #               base_family = "Roboto Condensed") +
+  theme_minimal(base_size = 10,
+                base_family = "Roboto Condensed") +
   theme(plot.title.position = "plot",
         plot.title = element_text(face = "bold"))
 
-# ggsave("day6.png", device = png, type = "cairo", bg = "white", width = 20, height = 13, units = "cm", dpi = 150)
+# ggsave("day8.png", device = png, type = "cairo", bg = "white", width = 13, height = 13, units = "cm", dpi = 150)
 ```
 
