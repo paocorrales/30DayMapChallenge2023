@@ -37,7 +37,7 @@ huracanes %>%
                         guide = guide_colorsteps(barwidth = 0.5,
                                                  barheight = 15)) +
   labs(x = NULL, y = NULL, color = "Decíl",
-       title = "Riego de ciclones en América del Norte",
+       title = "Riesgo de ciclones en América del Norte",
        subtitle = "O a donde no viajar durante la temporada de huracanes",
        caption = "Fuente: Socioeconomic Data and Applications Center (NASA)") +
   theme_minimal(base_size = 10,
