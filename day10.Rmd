@@ -1,0 +1,52 @@
+---
+title: 'Día 10: América del Norte'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(ggplot2)
+library(data.table)
+```
+
+## Datos
+
+Media hora de paseas por bases de datos después me encontré con la página Socioeconomic Data and Applications Center (sedac) de la NASA. En particular me pareció interensate explorar los datos de [Riesgo de Huracanes](https://sedac.ciesin.columbia.edu/data/set/ndh-cyclone-hazard-frequency-distribution). Estos datos fueron generados por el Center for Hazards and Risk Research - CHRR - Columbia University apartir de 1.600 tormentas entre el 1ro de enero de 1980 y el 31 de diciembre de 2000. 
+
+La información está representada en deciles según la frecuencia de ciclones observada. Acá ciclones viene a representar cualquier tormenta tropical incluyendo los huracanes.
+
+```{r}
+huracanes <- terra::rast("~/Downloads/gdcyc/gdcyc.asc") %>% 
+  as.data.table(xy = TRUE) %>% 
+  .[x %between% c(-150, -45) & y %between% c(0, 60)]
+
+mapa_na <- rnaturalearth::ne_countries(continent = "North America", returnclass = "sf")
+```
+
+
+```{r}
+huracanes %>% 
+  ggplot(aes(x, y)) +
+  geom_sf(data = mapa_na, inherit.aes = FALSE, fill = "grey98") +
+  # geom_contour_fill(aes(z = gdcyc, fill = after_stat(level))) +
+  geom_point(aes(color = gdcyc), size = 0.1) +
+  scale_color_viridis_c(option = "G", direction = -1, 
+                        breaks = seq(1, 10, 1),
+                        guide = guide_colorsteps(barwidth = 0.5,
+                                                 barheight = 15)) +
+  labs(x = NULL, y = NULL, color = "Decíl",
+       title = "Riego de ciclones en América del Norte",
+       subtitle = "O a donde no viajar durante la temporada de huracanes",
+       caption = "Fuente: Socioeconomic Data and Applications Center (NASA)") +
+  theme_minimal(base_size = 10,
+                base_family = "Roboto Condensed Light") +
+  theme(plot.title.position = "plot",
+        plot.title = element_text(face = "bold"))
+
+# ggsave("day10.png", device = png, type = "cairo", bg = "white", width = 20, height = 13, units = "cm", dpi = 150)
+```
+
+
+
