@@ -21,6 +21,8 @@ navbar:
         href: day8.html
       - text: "Día 9: Hexágonos"
         href: day9.html
+      - text: "Día 10: América del norte"
+        href: day10.html
 output_dir: docs
 output:
   html_document:
