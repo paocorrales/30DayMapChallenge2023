@@ -11,7 +11,7 @@
 
 
 
-<title>30 días de mapas!</title>
+<title>Día 10: América del Norte</title>
 
 <script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -293,21 +293,49 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">30 días de mapas!</h1>
+<h1 class="title toc-ignore">Día 10: América del Norte</h1>
 
 </div>
 
 
-<p>El desafío de 30 días de mapas para 2023 ya arrancó. Con el desafío
-de crear 1 mapa por día siguiendo una determinada consigna. Obvio uso R.
-Y obvio muchos datos meteorológicos siempre que pueda.</p>
-<p>El tiempo dirá si logro hacer más de un mapa durante noviembre!</p>
-<p>Información sobre el proyecto: <a
-href="https://30daymapchallenge.com/"
-class="uri">30daymapchallenge.com/</a></p>
-<p><img
-src="https://raw.githubusercontent.com/tjukanovt/30DayMapChallenge/main/images/flyers/30dmc-2023.png"
-width="500" /></p>
+<div id="datos" class="section level2">
+<h2>Datos</h2>
+<p>Media hora de paseas por bases de datos después me encontré con la
+página Socioeconomic Data and Applications Center (sedac) de la NASA. En
+particular me pareció interensate explorar los datos de <a
+href="https://sedac.ciesin.columbia.edu/data/set/ndh-cyclone-hazard-frequency-distribution">Riesgo
+de Huracanes</a>. Estos datos fueron generados por el Center for Hazards
+and Risk Research - CHRR - Columbia University apartir de 1.600
+tormentas entre el 1ro de enero de 1980 y el 31 de diciembre de
+2000.</p>
+<p>La información está representada en deciles según la frecuencia de
+ciclones observada. Acá ciclones viene a representar cualquier tormenta
+tropical incluyendo los huracanes.</p>
+<pre class="r"><code>huracanes &lt;- terra::rast(&quot;~/Downloads/gdcyc/gdcyc.asc&quot;) %&gt;% 
+  as.data.table(xy = TRUE) %&gt;% 
+  .[x %between% c(-150, -45) &amp; y %between% c(0, 60)]
+
+mapa_na &lt;- rnaturalearth::ne_countries(continent = &quot;North America&quot;, returnclass = &quot;sf&quot;)</code></pre>
+<pre class="r"><code>huracanes %&gt;% 
+  ggplot(aes(x, y)) +
+  geom_sf(data = mapa_na, inherit.aes = FALSE, fill = &quot;grey98&quot;) +
+  # geom_contour_fill(aes(z = gdcyc, fill = after_stat(level))) +
+  geom_point(aes(color = gdcyc), size = 0.1) +
+  scale_color_viridis_c(option = &quot;G&quot;, direction = -1, 
+                        breaks = seq(1, 10, 1),
+                        guide = guide_colorsteps(barwidth = 0.5,
+                                                 barheight = 15)) +
+  labs(x = NULL, y = NULL, color = &quot;Decíl&quot;,
+       title = &quot;Riego de ciclones en América del Norte&quot;,
+       subtitle = &quot;O a donde no viajar durante la temporada de huracanes&quot;,
+       caption = &quot;Fuente: Socioeconomic Data and Applications Center (NASA)&quot;) +
+  theme_minimal(base_size = 10,
+                base_family = &quot;Roboto Condensed Light&quot;) +
+  theme(plot.title.position = &quot;plot&quot;,
+        plot.title = element_text(face = &quot;bold&quot;))</code></pre>
+<p><img src="day10_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<pre class="r"><code># ggsave(&quot;day10.png&quot;, device = png, type = &quot;cairo&quot;, bg = &quot;white&quot;, width = 20, height = 13, units = &quot;cm&quot;, dpi = 150)</code></pre>
+</div>
 
 
 
