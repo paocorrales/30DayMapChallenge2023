@@ -1,0 +1,53 @@
+---
+title: 'Día 11: Retro'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(sf)
+library(ggplot2)
+```
+
+## Datos
+
+Lo más dfícil de 30 días de gráficos hasta ahora es conseguir datos copados. Bueno, trabajar con formatos raros también. Pero justo para la consigna de hoy estaba entre crear un mapa con "pinta" retro o buscar "datos retro". Me fui por lo segundo y estuve horas intentando encontrar shapefiles o algo parecido de los paises o regiones en algún momento entre 1400 y 1700. Complicadísimo. 
+
+Finalmente me curcé con el proyecto [HGIS de las Indias](https://www.hgis-indias.net) (no les voy a discutir el nombre pero...) que tienen un montón de información geoespacial histórica. Y tienen tanto detalle que me resultó imposible graficar, [acá está](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/YPEU5E) por si alguien quiere aprovecharlo. 
+
+Opté entonces por graficar las [oficinas postales entre 1765 y 1808](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/8SDFTT), que para mi son cosa del pasado porque acá en Argentina el correo es un desastre y todo el mundo evita usarlo a toda costa.
+
+```{r}
+mapa <- read_sf("C:/Users/tonin/Downloads/dataverse_files/correos_estafetas/correos_estafetas.shp") |> 
+  
+# mapa <- mapa <- read_sf("C:/Users/tonin/Downloads/territorios-2023-10-27/Extranjero_merge.shp")
+
+mapa_sa <- rnaturalearth::ne_countries(continent = c("South America", 
+                                                    "North America", 
+                                                    "Central America"), 
+                                      returnclass = "sf",
+                                      scale = 10)
+```
+
+Y de paso, esto me dió la oportunidad de probar el paquete `ggpointdensity` que tenía en la mira hace rato pero al que no le había encontrado oportunidad de usar.
+
+```{r}
+mapa |> 
+  ggplot(aes(GZ_Lon, GZ_Lat)) +
+  ggpointdensity::geom_pointdensity() +
+  scale_color_viridis_c(option = "B", guide = guide_colorbar(barwidth = 0.5,
+                                                 barheight = 15)) +
+  geom_sf(data = mapasa, inherit.aes = FALSE, fill = NA) +
+  coord_sf(expand = FALSE, xlim = c(-120, -40), ylim = c(-60, 40)) +
+  labs(x = NULL, y = NULL, color = NULL,
+       title = "Ofcinas de correo postal en la América española",
+       subtitle = "Entre 1765 y 1808",
+       caption = "Fuente: Datos de HGIS de las Indias, www.hgis-indias.net") +
+  theme_minimal(base_size = 10,
+                base_family = "Roboto Condensed") +
+  theme(plot.title.position = "plot",
+        plot.title = element_text(face = "bold"))
+```
+
+
