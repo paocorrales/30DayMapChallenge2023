@@ -19,14 +19,13 @@ Finalmente me curcé con el proyecto [HGIS de las Indias](https://www.hgis-india
 Opté entonces por graficar las [oficinas postales entre 1765 y 1808](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/8SDFTT), que para mi son cosa del pasado porque acá en Argentina el correo es un desastre y todo el mundo evita usarlo a toda costa.
 
 ```{r}
-mapa <- read_sf("C:/Users/tonin/Downloads/dataverse_files/correos_estafetas/correos_estafetas.shp") |> 
+mapa <- read_sf("datos/correos_estafetas/correos_estafetas.shp") 
   
-# mapa <- mapa <- read_sf("C:/Users/tonin/Downloads/territorios-2023-10-27/Extranjero_merge.shp")
 
 mapa_sa <- rnaturalearth::ne_countries(continent = c("South America", 
                                                     "North America", 
                                                     "Central America"), 
-                                      returnclass = "sf",
+                                      returnclass = "sf", 
                                       scale = 10)
 ```
 
@@ -35,19 +34,21 @@ Y de paso, esto me dió la oportunidad de probar el paquete `ggpointdensity` que
 ```{r}
 mapa |> 
   ggplot(aes(GZ_Lon, GZ_Lat)) +
-  ggpointdensity::geom_pointdensity() +
+  geom_sf(data = mapa_sa, inherit.aes = FALSE, fill = "grey98") +
+  ggpointdensity::geom_pointdensity(size = 1) +
   scale_color_viridis_c(option = "B", guide = guide_colorbar(barwidth = 0.5,
                                                  barheight = 15)) +
-  geom_sf(data = mapasa, inherit.aes = FALSE, fill = NA) +
   coord_sf(expand = FALSE, xlim = c(-120, -40), ylim = c(-60, 40)) +
   labs(x = NULL, y = NULL, color = NULL,
-       title = "Ofcinas de correo postal en la América española",
+       title = "Oficinas de correo postal en la América española",
        subtitle = "Entre 1765 y 1808",
        caption = "Fuente: Datos de HGIS de las Indias, www.hgis-indias.net") +
   theme_minimal(base_size = 10,
                 base_family = "Roboto Condensed") +
   theme(plot.title.position = "plot",
         plot.title = element_text(face = "bold"))
+
+# ggsave("day11.png", device = png, type = "cairo", bg = "white", width = 14, height = 16, units = "cm", dpi = 150)
 ```
 
 
