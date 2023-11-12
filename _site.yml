@@ -25,6 +25,8 @@ navbar:
         href: day10.html
       - text: "Día 11: Retro"
         href: day11.html
+      - text: "Día 12: América del sur"
+        href: day12.html
 output_dir: docs
 output:
   html_document:
