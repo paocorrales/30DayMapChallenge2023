@@ -1,0 +1,46 @@
+---
+title: 'Día 12: América del Sur'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+library(metR)
+```
+
+Siempre hay algo de estos desafíos que me lleva tiempo pero que al mismo tiempo implica aprender algo nuevo. En este caso usé datos de topografía que ni me tengo que descargar porque metR tinene una función `GetTopography()` que los descarga desde ETOPO1 Global Relief Model (si, gracias Elio por salvar mi dorctorado).
+
+Esta vez me puse a jugar con las paletas de colores, y miercoles que hay paletas de colores para tirar para arriba. Si están buscando alguna, les recomiendo [este repositorio](https://github.com/EmilHvitfeldt/r-color-palettes) de Emil Hvitfeldt. 
+
+Me decidí por la paleta "fes" del paquete `scico` que tiene pinta de topografía y además una buena interfaz con ggplot2.
+
+```{r}
+topo <- GetTopography(270, 330, 20, -60, resolution = 0.1)
+
+mapa <- rnaturalearth::ne_countries(continent = c("South America"), returnclass = "sf")
+
+ggplot(topo, aes(ConvertLongitude(lon), lat)) +
+  geom_contour_fill(aes(z = h, fill = after_stat(level)), 
+                    clip = mapa, 
+                    breaks = seq(0, 7000, 250)) +
+  scico::scale_fill_scico_d(palette = "fes", begin = 0.505,
+                            labels = function(x) JumpBy(x, 3, fill = ""),
+                            guide = guide_colorsteps(barwidth = 0.5,
+                                                     barheight = 15)) +
+  geom_sf(data = mapa, inherit.aes = FALSE, 
+          fill = NA, 
+          color = "white",
+          linewidth = 0.1) +
+  labs(x = NULL, y = NULL, fill = "[m]",
+       title = "Topografía de América del Sur",
+       caption = "Fuente: ETOPO1 Global Relief Model") +
+  theme_minimal(base_size = 10,
+                base_family = "Roboto Condensed Light") +
+  theme(plot.title.position = "plot",
+        plot.title = element_text(face = "bold"))
+
+# ggsave("day12.png", device = png, type = "cairo", bg = "white", width = 12, height = 16, units = "cm", dpi = 150)
+```
+
