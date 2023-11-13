@@ -9,11 +9,9 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Pao Corrales" />
 
-<meta name="date" content="2023-11-03" />
 
-<title>Día 3: Polígonos</title>
+<title>Día 13: Choropleth</title>
 
 <script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -304,96 +302,84 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Día 3: Polígonos</h1>
-<h4 class="author">Pao Corrales</h4>
-<h4 class="date">2023-11-03</h4>
+<h1 class="title toc-ignore">Día 13: Choropleth</h1>
 
 </div>
 
 
-<div id="datos" class="section level2">
-<h2>Datos</h2>
-<p>Nuevamente usamos la ubicación de las estaciones meteorológicas del
-Servicio Meteorológico Nacional disponibles en: <a
-href="https://www.smn.gob.ar/descarga-de-datos">www.smn.gob.ar/descarga-de-datos</a>.
-Aprovechando lo que hice para el <a href="/day1.html">día 1</a> voy a
-intentar graficar el “área de influencia” de cada estación usando un
-diagrama de Vorionoi. El diagrama de Voronoi divide el plan en regiones
-de tal manera que cada punto en una región dada esté más cerca del punto
-central definido que de cualquier otro punto en el plano. En este caso
-los puntos centrales de cada región serán las estaciones
-meteorológicas.</p>
-<pre class="r"><code>estaciones &lt;- fread(&quot;https://raw.githubusercontent.com/eliocamp/r-clima/fffb3fa596bc73afeeaa2a6296804da436e82fd3/datos/estaciones_smn.csv&quot;) %&gt;% 
-  .[provincia != &quot;ANTARTIDA&quot;] # Para hacer un mapa mas chiquito sin la Antartida
+<p>Hoy voy a trabajar con datos de espacios verdes según el Gobierto de
+la Ciudad de Buenos Aires. Y digo “según” porque esta gente tiene una
+definición de “espacio verde” que a veces te desconcierta.</p>
+<pre class="r"><code>verdes &lt;- read_sf(&quot;datos/espacio_verde_publico/espacio_verde_publico_wgs84.shp&quot;) 
 
-mapa &lt;- rnaturalearth::ne_states(c(&quot;Argentina&quot;, &quot;Falkland Islands&quot;), returnclass = &quot;sf&quot;)
+verdes %&gt;% 
+  ggplot() +
+  geom_sf(aes(color = clasificac))</code></pre>
+<p><img src="day13_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<p>No se en que país un cantero es un espacio verde. No es que puedar ir
+a la 9 de Julio a poner la mantita y hacer un picnic. Chau canteros.</p>
+<pre class="r"><code>verdes &lt;- read_sf(&quot;datos/espacio_verde_publico/espacio_verde_publico_wgs84.shp&quot;) %&gt;% 
+  filter(clasificac != &quot;CANTERO CENTRAL&quot;) # No gente, un cantero no es un espacio verde</code></pre>
+<p>Acá es curioso que ese barrio al oeste tenga más o menos un 80% del
+área cubierta por espacios verdes. Es Villa Real y si van a google maps
+van a ver que la cosa no se sostiene, tiene 3 plazas locas. Tampoco
+tiene sentido que el porcentaje de este barrio sea mayor al de Puerto
+Madero que tiene la Reserva Costanera Sur ahi mismo.</p>
+<pre class="r"><code>mapa_barrios &lt;- sf::st_read(&quot;https://cdn.buenosaires.gob.ar/datosabiertos/datasets/ministerio-de-educacion/barrios/barrios.geojson&quot;)</code></pre>
+<pre><code>## Reading layer `barrios&#39; from data source 
+##   `https://cdn.buenosaires.gob.ar/datosabiertos/datasets/ministerio-de-educacion/barrios/barrios.geojson&#39; 
+##   using driver `GeoJSON&#39;
+## Simple feature collection with 48 features and 5 fields
+## Geometry type: MULTIPOLYGON
+## Dimension:     XY
+## Bounding box:  xmin: -58.53152 ymin: -34.70529 xmax: -58.33515 ymax: -34.52649
+## Geodetic CRS:  WGS 84</code></pre>
+<pre class="r"><code>verdes %&gt;% 
+  as.data.frame() %&gt;% 
+  group_by(BARRIO) %&gt;% 
+  summarise(area_barrio = sum(area)) %&gt;% 
+  left_join(mapa_barrios) %&gt;% 
+  ggplot(aes(geometry = geometry)) +
+  geom_sf(aes(fill = area_barrio/AREA)) </code></pre>
+<pre><code>## Joining with `by = join_by(BARRIO)`</code></pre>
+<p><img src="day13_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>Ahh pero si podemos contar los canteros de la 9 de Julio como
+espacios verdes, también podemos contar la banquina de la General Paz y
+asignar TODO a un único barrio. En defensa del Gobierto de la Ciudad de
+Buenos Aires, es cierto que es algunas partes del recorrido hay árboles
+y eso ayuda. Pero son los menos.</p>
+<pre class="r"><code>verdes %&gt;% 
+  filter(BARRIO == &quot;VILLA REAL&quot;) %&gt;% 
+  ggplot() +
+  geom_sf(aes(color = clasificac))</code></pre>
+<p><img src="day13_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<pre class="r"><code>verdes &lt;- read_sf(&quot;datos/espacio_verde_publico/espacio_verde_publico_wgs84.shp&quot;) %&gt;% 
+  filter(clasificac != &quot;CANTERO CENTRAL&quot;) %&gt;%  # No gente, un cantero no es un espacio verde
+  filter(!(BARRIO == &quot;VILLA REAL&quot; &amp; clasificac == &quot;PLAZOLETA&quot;)) # No, la General Paz tampoco
 
-dist &lt;- geodist(estaciones[, c(&quot;lon&quot;, &quot;lat&quot;)],  measure = &quot;geodesic&quot;) 
 
-colnames(dist) &lt;- estaciones$numeroOACI
-rownames(dist) &lt;- estaciones$numeroOACI
-
-dist &lt;- reshape2::melt(dist, value.name = &quot;distancia&quot;) %&gt;% 
-  setDT() %&gt;% 
-  setnames(c(&quot;Var1&quot;, &quot;Var2&quot;), c(&quot;numeroOACI&quot;, &quot;vecina&quot;)) %&gt;% 
-  .[numeroOACI != vecina] %&gt;% 
-  .[, .SD[distancia == min(distancia)], by = .(numeroOACI)]
-
-estaciones &lt;- estaciones[dist, on = .NATURAL]</code></pre>
-<p>Yo se que parece fácil, de hecho el gráfico de abajo lo conseguí en
-los primeros 5 minutos aún contando el tiempo que me llevó instalar
-<code>ggvoronoi</code> desde github luego de que tuviera que aprender a
-instalar una vieja versión de <code>rgeos</code> que se archivo el mes
-pasado en CRAN. Tiene pinta de ventana de iglesia!</p>
-<pre class="r"><code>library(ggvoronoi)
-
-estaciones %&gt;% 
-  ggplot(aes(lon, lat)) +
-  geom_sf(data = mapa, inherit.aes = FALSE, fill = &quot;grey98&quot;) +
-  geom_point(size = 0.5, alpha = 1) +
-  geom_voronoi(aes(fill = distancia), alpha = 0.5) +
-  stat_voronoi(geom = &quot;path&quot;, linewidth = 0.2) +
-  scale_fill_viridis_c(option = &quot;A&quot;, guide = NULL) +
-  coord_sf(expand = FALSE) +
-  theme_void()</code></pre>
-<p><img src="day3_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
-<p>La función <code>geom_voronoi()</code> tiene un argumento
-<code>outline</code> que en teoría permite recortar el rectangulo a
-partir de alguna forma. Por que no intentar que tenga la forma de
-Argentina. Por supuesto que de la teoría a la practica hay un camino
-largo y en este caso convertir el mapa sf a puntitos resultó ser no
-trivial. Finalmente usé la clase sp y resultó. A esta altura las
-provincias tampoco suman así que volaron</p>
-<pre class="r"><code>mapa_arg &lt;- rnaturalearth::ne_countries(country = c(&quot;Argentina&quot;), returnclass = &quot;sf&quot;, scale = 50,)
-
-argentina &lt;- rnaturalearth::ne_countries(country = c(&quot;Argentina&quot;, &quot;Falkland Islands&quot;), 
-                                         returnclass = &quot;sp&quot;, scale = 50,) 
-
-estaciones %&gt;% 
-  ggplot(aes(lon, lat)) +
-  geom_sf(data = mapa_arg, inherit.aes = FALSE, fill = &quot;grey98&quot;) +
-  geom_point(size = 0.5, alpha = 1) +
-  geom_voronoi(aes(fill = distancia/1000), alpha = 0.8, outline = argentina,
-               color = 1, linewidth = 0.2) +
-  geom_point(size = 0.5, alpha = 1) +
-  scale_fill_viridis_c(option = &quot;A&quot;, guide = NULL) +
-  coord_sf(expand = FALSE) +
-  labs(x = NULL, y = NULL, fill = NULL,
-       title = &quot;Área de influencia de las estaciones meteorológicas&quot;,
-       subtitle = &quot;En la patagonia los datos de las estaciones\n&#39;representan&#39; un área enorme&quot;,
-       caption = &quot;Fuente: Servicio Meteorológico Nacional&quot;) +
+verdes %&gt;% 
+  as.data.frame() %&gt;% 
+  group_by(BARRIO) %&gt;% 
+  summarise(area_barrio = sum(area)) %&gt;% 
+  left_join(mapa_barrios) %&gt;% 
+  ggplot(aes(geometry = geometry)) +
+  geom_sf(aes(fill = area_barrio/AREA)) +
+  scale_fill_viridis_c(option = &quot;G&quot;, direction = -1,
+                       guide = guide_colorsteps(barwidth = 0.5,
+                                                barheight = 15)) +
+  labs(x = NULL, y = NULL, fill = &quot;[%]&quot;,
+       title = &quot;Porcentaje de área cubierta por espacios verdes en la Ciudad de Buenos Aires&quot;,
+       subtitle = &quot;Restando canteros y la banquina de Av. General Paz&quot;,
+       caption = &quot;Fuente: Buenos Aires Data&quot;) +
   theme_void(base_size = 10,
-             base_family = &quot;Roboto Condensed Light&quot;) +
+                base_family = &quot;Roboto Condensed&quot;) +
   theme(plot.title.position = &quot;plot&quot;,
-        plot.title = element_text(face = &quot;bold&quot;))</code></pre>
-<p><img src="day3_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
-<pre class="r"><code># ggsave(&quot;day3.png&quot;, device = png, type = &quot;cairo&quot;, bg = &quot;white&quot;, width = 10, height = 18, units = &quot;cm&quot;, dpi = 150)</code></pre>
-<p>Pero además este gráfico me hizo notar que algunas estaciones estaban
-flotando en el Atlántico o del lado de Brasil. Y revisando los datos,
-resulta que hay un error a la hora de convertir las coordenadas
-originales en grados y minutos a grados decimales. Así que no confien en
-mis datos.</p>
-</div>
+        plot.title = ggtext::element_textbox_simple(face = &quot;bold&quot;),
+        plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), &quot;cm&quot;))</code></pre>
+<pre><code>## Joining with `by = join_by(BARRIO)`</code></pre>
+<p><img src="day13_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<pre class="r"><code># ggsave(&quot;day13.png&quot;, device = png, type = &quot;cairo&quot;, bg = &quot;white&quot;, width = 12, height = 12, units = &quot;cm&quot;, dpi = 150)</code></pre>
 
 
 
