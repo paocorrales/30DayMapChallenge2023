@@ -4,8 +4,11 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
 library(ggplot2)
 library(sf)
 library(dplyr)
@@ -66,9 +69,10 @@ verdes %>%
   ggplot(aes(geometry = geometry)) +
   geom_sf(aes(fill = area_barrio/AREA)) +
   scale_fill_viridis_c(option = "G", direction = -1,
+                       labels = scales::percent_format(),
                        guide = guide_colorsteps(barwidth = 0.5,
                                                 barheight = 15)) +
-  labs(x = NULL, y = NULL, fill = "[%]",
+  labs(x = NULL, y = NULL, fill = NULL,
        title = "Porcentaje de área cubierta por espacios verdes en la Ciudad de Buenos Aires",
        subtitle = "Restando canteros y la banquina de Av. General Paz",
        caption = "Fuente: Buenos Aires Data") +
