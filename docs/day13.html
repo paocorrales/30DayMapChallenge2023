@@ -341,7 +341,6 @@ Madero que tiene la Reserva Costanera Sur ahi mismo.</p>
   left_join(mapa_barrios) %&gt;% 
   ggplot(aes(geometry = geometry)) +
   geom_sf(aes(fill = area_barrio/AREA)) </code></pre>
-<pre><code>## Joining with `by = join_by(BARRIO)`</code></pre>
 <p><img src="day13_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
 <p>Ahh pero si podemos contar los canteros de la 9 de Julio como
 espacios verdes, también podemos contar la banquina de la General Paz y
@@ -366,9 +365,10 @@ verdes %&gt;%
   ggplot(aes(geometry = geometry)) +
   geom_sf(aes(fill = area_barrio/AREA)) +
   scale_fill_viridis_c(option = &quot;G&quot;, direction = -1,
+                       labels = scales::percent_format(),
                        guide = guide_colorsteps(barwidth = 0.5,
                                                 barheight = 15)) +
-  labs(x = NULL, y = NULL, fill = &quot;[%]&quot;,
+  labs(x = NULL, y = NULL, fill = NULL,
        title = &quot;Porcentaje de área cubierta por espacios verdes en la Ciudad de Buenos Aires&quot;,
        subtitle = &quot;Restando canteros y la banquina de Av. General Paz&quot;,
        caption = &quot;Fuente: Buenos Aires Data&quot;) +
@@ -377,7 +377,6 @@ verdes %&gt;%
   theme(plot.title.position = &quot;plot&quot;,
         plot.title = ggtext::element_textbox_simple(face = &quot;bold&quot;),
         plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), &quot;cm&quot;))</code></pre>
-<pre><code>## Joining with `by = join_by(BARRIO)`</code></pre>
 <p><img src="day13_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
 <pre class="r"><code># ggsave(&quot;day13.png&quot;, device = png, type = &quot;cairo&quot;, bg = &quot;white&quot;, width = 12, height = 12, units = &quot;cm&quot;, dpi = 150)</code></pre>
 
