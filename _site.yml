@@ -29,6 +29,8 @@ navbar:
         href: day12.html
       - text: "Día 13: Choropleth"
         href: day13.html
+      - text: "Día 14: Europa"
+        href: day14.html
 output_dir: docs
 output:
   html_document:
