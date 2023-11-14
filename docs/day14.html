@@ -11,7 +11,7 @@
 
 
 
-<title>30 días de mapas!</title>
+<title>Día 14: Europa</title>
 
 <script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -305,21 +305,61 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">30 días de mapas!</h1>
+<h1 class="title toc-ignore">Día 14: Europa</h1>
 
 </div>
 
 
-<p>El desafío de 30 días de mapas para 2023 ya arrancó. Con el desafío
-de crear 1 mapa por día siguiendo una determinada consigna. Obvio uso R.
-Y obvio muchos datos meteorológicos siempre que pueda.</p>
-<p>El tiempo dirá si logro hacer más de un mapa durante noviembre!</p>
-<p>Información sobre el proyecto: <a
-href="https://30daymapchallenge.com/"
-class="uri">30daymapchallenge.com/</a></p>
-<p><img
-src="https://raw.githubusercontent.com/tjukanovt/30DayMapChallenge/main/images/flyers/30dmc-2023.png"
-width="500" /></p>
+<p>Resulta que en septiembre fui a Islandia (que está en Europa así que
+cumple la consigna!) y sí, google tiene permiso de guardar datos y todos
+los meses me dice todo lo que no caminé en comparación con el mes
+anterior. Lo interesante es que se pueden descargar esos datos, y aunque
+no logré descargar periodos largos, con paciencia conseguí los datos de
+la semana que estuve en Islandia.</p>
+<pre class="r"><code>history &lt;- purrr::map(Sys.glob(&quot;datos/islandia/history-*&quot;), read_sf) %&gt;% 
+  data.table::rbindlist() %&gt;% 
+  .[begin &gt;= lubridate::ymd_hms(&quot;2023-09-11 04:49:56&quot;)] %&gt;% 
+  unique(by = c(&quot;begin&quot;, &quot;end&quot;)) 
+
+# Hay una mejor manera de generar las etiquetas?
+labels &lt;- history %&gt;% 
+  filter(st_is(geometry, &quot;POINT&quot;)) %&gt;% 
+  mutate(as_tibble(st_coordinates(geometry))) %&gt;% 
+  mutate(name2 = c(NA, NA, NA,&quot;Reykjadalur&quot;, NA, NA
+                   ,&quot;Thingvellir National Park&quot;, &quot;Geysir&quot;, &quot;Kualaug&quot;, NA, NA, &quot;Seljalandsfoss&quot;
+                   ,&quot;Rutshellir&quot;, NA, &quot;Reynisfjara&quot;, NA                                            
+                   ,NA , &quot;Jökulsárlón&quot;, &quot;Fjallsárlón Glacier&quot;, NA
+                   ,&quot;Skaftafell&quot;, NA, &quot;Fjaðrárgljúfur&quot;, NA, &quot;Gluggafoss&quot;, NA, NA, NA
+                   ,NA, &quot;Volcano Skali&quot;, &quot;Brimketill&quot;, &quot;Gunnuhver&quot;, NA, NA))
+
+mapa_islandia &lt;- rnaturalearth::ne_countries(country = &quot;Iceland&quot;, returnclass = &quot;sf&quot;, scale = 10)</code></pre>
+<p>Acá lo dificil fue decidir con que etiquetas quedarme y no poner
+todas, además de que hacerlo a mano es todo un trabajo. No se realmente
+si hay una manera de automatizar eso.</p>
+<pre class="r"><code>ggplot(history, aes(geometry = geometry)) +
+  geom_sf(data = mapa_islandia, fill = &quot;grey98&quot;) +
+  ggforce::geom_mark_circle(data = labels, aes(description = name2, x = X, y = Y,
+                                               filter = !is.na(name2)),
+                            color = NA, expand = unit(0, &quot;cm&quot;), label.fontsize = 9, 
+                            con.cap = unit(0, &quot;mm&quot;),
+                            con.type = &quot;straight&quot;,
+                            label.buffer = unit(3, &quot;mm&quot;),
+                            label.fill = &quot;white&quot;) +
+  geom_sf(aes(fill = factor(lubridate::day(begin)-10), color = factor(lubridate::day(begin)-10)), shape = 21) +
+  scale_fill_brewer(palette = &quot;Dark2&quot;) +
+  scale_color_brewer(palette = &quot;Dark2&quot;) +
+  coord_sf(xlim = c(-24.5, -14), ylim = c(63, 66.5)) +
+  labs(x = NULL, y = NULL, color = &quot;[día]&quot;, fill = &quot;[día]&quot;,
+       title = &quot;Aventura en islandia, edición verano&quot;,
+       # subtitle = &quot;Restando canteros y la banquina de Av. General Paz&quot;,
+       caption = &quot;Fuente: Los datos que le regalé a google&quot;) +
+  theme_void(base_size = 10,
+                base_family = &quot;Roboto Condensed&quot;) +
+  theme(plot.title.position = &quot;plot&quot;,
+        plot.title = ggtext::element_textbox_simple(face = &quot;bold&quot;),
+        plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), &quot;cm&quot;))</code></pre>
+<p><img src="day14_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<pre class="r"><code># ggsave(&quot;day14.png&quot;, device = png, type = &quot;cairo&quot;, bg = &quot;white&quot;, width = 21, height = 17, units = &quot;cm&quot;, dpi = 150)</code></pre>
 
 
 
