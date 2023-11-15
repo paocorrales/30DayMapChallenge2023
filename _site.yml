@@ -31,6 +31,8 @@ navbar:
         href: day13.html
       - text: "Día 14: Europa"
         href: day14.html
+      - text: "Día 15: Open Street Map"
+        href: day15.html
 output_dir: docs
 output:
   html_document:
