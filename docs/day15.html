@@ -11,7 +11,7 @@
 
 
 
-<title>Día 13: Choropleth</title>
+<title>Día 15: Open Street Map</title>
 
 <script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -308,29 +308,66 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Día 13: Choropleth</h1>
+<h1 class="title toc-ignore">Día 15: Open Street Map</h1>
 
 </div>
 
 
-<p>Hoy voy a trabajar con datos de espacios verdes según el Gobierto de
-la Ciudad de Buenos Aires. Y digo “según” porque esta gente tiene una
-definición de “espacio verde” que a veces te desconcierta.</p>
-<pre class="r"><code>verdes &lt;- read_sf(&quot;datos/espacio_verde_publico/espacio_verde_publico_wgs84.shp&quot;) 
+<div id="cómo-funciona-osmdata" class="section level2">
+<h2>Cómo funciona osmdata?</h2>
+<p>Es la primera vez que voy a usar datos de Open Street Map pero
+gracias al ser humano que creo un paquete para interactual con la API.
+Obvio el paquete es parte de la suite de rOpenSci.</p>
+<p>Parece que con <code>available_features()</code> podemos ver una
+lista de features, y además cada una tiene tags
+(<code>available_tags()</code>). Algunas features tiene muchas tags,
+otras 1 (yes/no).</p>
+<pre class="r"><code>head(available_features())</code></pre>
+<pre><code>## [1] &quot;4wd_only&quot;  &quot;abandoned&quot; &quot;abutters&quot;  &quot;access&quot;    &quot;addr&quot;      &quot;addr:city&quot;</code></pre>
+<pre class="r"><code>available_tags(&quot;bicycle_road&quot;)</code></pre>
+<pre><code>## # A tibble: 1 × 2
+##   Key          Value
+##   &lt;chr&gt;        &lt;chr&gt;
+## 1 bicycle_road yes</code></pre>
+<p>Pero primero hay que definir el área con <code>getbb()</code>, bb
+viene de bounding box. La función <code>opq()</code> crea una “overpass
+query”, que calculo que es una consulta de los datos dentro de la región
+definida por <code>getbb()</code>.</p>
+<pre class="r"><code>ba_bb &lt;- getbb(&quot;Buenos Aires&quot;)
 
-verdes %&gt;% 
-  ggplot() +
-  geom_sf(aes(color = clasificac))</code></pre>
-<p><img src="day13_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
-<p>No se en que país un cantero es un espacio verde. No es que puedar ir
-a la 9 de Julio a poner la mantita y hacer un picnic. Chau canteros.</p>
-<pre class="r"><code>verdes &lt;- read_sf(&quot;datos/espacio_verde_publico/espacio_verde_publico_wgs84.shp&quot;) %&gt;% 
-  filter(clasificac != &quot;CANTERO CENTRAL&quot;) # No gente, un cantero no es un espacio verde</code></pre>
-<p>Acá es curioso que ese barrio al oeste tenga más o menos un 80% del
-área cubierta por espacios verdes. Es Villa Real y si van a google maps
-van a ver que la cosa no se sostiene, tiene 3 plazas locas. Tampoco
-tiene sentido que el porcentaje de este barrio sea mayor al de Puerto
-Madero que tiene la Reserva Costanera Sur ahi mismo.</p>
+ba_bb %&gt;%
+  opq()</code></pre>
+<pre><code>## $bbox
+## [1] &quot;-34.705637,-58.5314494,-34.5265535,-58.3351423&quot;
+## 
+## $prefix
+## [1] &quot;[out:xml][timeout:25];\n(\n&quot;
+## 
+## $suffix
+## [1] &quot;);\n(._;&gt;;);\nout body;&quot;
+## 
+## $features
+## NULL
+## 
+## $osm_types
+## [1] &quot;node&quot;     &quot;way&quot;      &quot;relation&quot;
+## 
+## attr(,&quot;class&quot;)
+## [1] &quot;list&quot;           &quot;overpass_query&quot;
+## attr(,&quot;nodes_only&quot;)
+## [1] FALSE</code></pre>
+<p>Si hipotéticamente quisiera datos de bicisendas en Buenos Aires puedo
+acceder a esos datos usando la función <code>add_osm_fueature()</code>
+que agrega una feature a la consulta y luego <code>osmdata_sf()</code>
+que es la que finalmente devuelve los datos, en este caso en formato
+sf.</p>
+<pre class="r"><code>bicisendas &lt;- 
+  ba_bb %&gt;%
+  opq() %&gt;% 
+  add_osm_feature(key = &quot;bicycle_road&quot;) %&gt;% 
+  osmdata_sf()</code></pre>
+<p>Pero lo que devuelve no es muy alentador. Hay datos de bicisendas y
+estaciones en OSM pero esta no parece ser la manera de acceder.</p>
 <pre class="r"><code>mapa_barrios &lt;- sf::st_read(&quot;https://cdn.buenosaires.gob.ar/datosabiertos/datasets/ministerio-de-educacion/barrios/barrios.geojson&quot;)</code></pre>
 <pre><code>## Reading layer `barrios&#39; from data source 
 ##   `https://cdn.buenosaires.gob.ar/datosabiertos/datasets/ministerio-de-educacion/barrios/barrios.geojson&#39; 
@@ -340,51 +377,46 @@ Madero que tiene la Reserva Costanera Sur ahi mismo.</p>
 ## Dimension:     XY
 ## Bounding box:  xmin: -58.53152 ymin: -34.70529 xmax: -58.33515 ymax: -34.52649
 ## Geodetic CRS:  WGS 84</code></pre>
-<pre class="r"><code>verdes %&gt;% 
-  as.data.frame() %&gt;% 
-  group_by(BARRIO) %&gt;% 
-  summarise(area_barrio = sum(area)) %&gt;% 
-  left_join(mapa_barrios) %&gt;% 
-  ggplot(aes(geometry = geometry)) +
-  geom_sf(aes(fill = area_barrio/AREA)) </code></pre>
-<p><img src="day13_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
-<p>Ahh pero si podemos contar los canteros de la 9 de Julio como
-espacios verdes, también podemos contar la banquina de la General Paz y
-asignar TODO a un único barrio. En defensa del Gobierto de la Ciudad de
-Buenos Aires, es cierto que es algunas partes del recorrido hay árboles
-y eso ayuda. Pero son los menos.</p>
-<pre class="r"><code>verdes %&gt;% 
-  filter(BARRIO == &quot;VILLA REAL&quot;) %&gt;% 
+<pre class="r"><code>bicisendas$osm_points %&gt;% 
   ggplot() +
-  geom_sf(aes(color = clasificac))</code></pre>
-<p><img src="day13_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
-<pre class="r"><code>verdes &lt;- read_sf(&quot;datos/espacio_verde_publico/espacio_verde_publico_wgs84.shp&quot;) %&gt;% 
-  filter(clasificac != &quot;CANTERO CENTRAL&quot;) %&gt;%  # No gente, un cantero no es un espacio verde
-  filter(!(BARRIO == &quot;VILLA REAL&quot; &amp; clasificac == &quot;PLAZOLETA&quot;)) # No, la General Paz tampoco
-
-
-verdes %&gt;% 
-  as.data.frame() %&gt;% 
-  group_by(BARRIO) %&gt;% 
-  summarise(area_barrio = sum(area)) %&gt;% 
-  left_join(mapa_barrios) %&gt;% 
-  ggplot(aes(geometry = geometry)) +
-  geom_sf(aes(fill = area_barrio/AREA)) +
-  scale_fill_viridis_c(option = &quot;G&quot;, direction = -1,
-                       labels = scales::percent_format(),
-                       guide = guide_colorsteps(barwidth = 0.5,
-                                                barheight = 15)) +
-  labs(x = NULL, y = NULL, fill = NULL,
-       title = &quot;Porcentaje de área cubierta por espacios verdes en la Ciudad de Buenos Aires&quot;,
-       subtitle = &quot;Restando canteros y la banquina de Av. General Paz&quot;,
-       caption = &quot;Fuente: Buenos Aires Data&quot;) +
+  geom_sf(data = mapa_barrios) +
+  geom_sf()</code></pre>
+<p><img src="day15_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>Revisando tanto la web <a href="https://www.openstreetmap.org/"
+class="uri">https://www.openstreetmap.org/</a> como la wiki <a
+href="https://wiki.openstreetmap.org/wiki/Map_features"
+class="uri">https://wiki.openstreetmap.org/wiki/Map_features</a>,
+finalmente resultó que la key es “route” y el value es “bicycle”. Mucho
+ctrl+f en esas páginas y todo resuelto.</p>
+<pre class="r"><code>bicisendas &lt;- 
+  ba_bb %&gt;%
+  opq() %&gt;% 
+  add_osm_feature(key = &quot;route&quot;, value = &quot;bicycle&quot;) %&gt;% 
+  osmdata_sf()</code></pre>
+<p>Yey! Es todo lo que necesitaba, ya se usar OSM (?)</p>
+<pre class="r"><code>ggplot() +
+  geom_sf(data = mapa_barrios) +
+  geom_sf(data = bicisendas$osm_lines, color = &quot;darkorange&quot;)</code></pre>
+<p><img src="day15_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<pre class="r"><code>bicisendas$osm_lines %&gt;% 
+  mutate(oneway = ifelse(is.na(`oneway:bicycle`), &quot;no&quot;, `oneway:bicycle`)) %&gt;%
+  ggplot() +
+  geom_sf(data = mapa_barrios, fill = &quot;grey98&quot;) +
+  geom_sf(aes(color = oneway)) +
+  scale_color_manual(values = c(&quot;darkorange&quot;, &quot;cyan4&quot;), labels = c(&quot;Sí&quot;, &quot;No&quot;)) +
+  labs(x = NULL, y = NULL, color = &quot;Doble sentido?&quot;,
+       title = &quot;Red de bicisendas en la Ciudad de Buenos Aires&quot;,
+       caption = &quot;Fuente: Open Street Map&quot;) +
   theme_void(base_size = 10,
-                base_family = &quot;Roboto Condensed&quot;) +
+             base_family = &quot;Roboto Condensed&quot;) +
   theme(plot.title.position = &quot;plot&quot;,
         plot.title = ggtext::element_textbox_simple(face = &quot;bold&quot;),
+        plot.caption = element_text(hjust = 0),
+        legend.position = c(0.75, 0.12),
         plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), &quot;cm&quot;))</code></pre>
-<p><img src="day13_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
-<pre class="r"><code># ggsave(&quot;day13.png&quot;, device = png, type = &quot;cairo&quot;, bg = &quot;white&quot;, width = 12, height = 12, units = &quot;cm&quot;, dpi = 150)</code></pre>
+<p><img src="day15_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<pre class="r"><code># ggsave(&quot;day15.png&quot;, device = png, type = &quot;cairo&quot;, bg = &quot;white&quot;, width = 10, height = 12, units = &quot;cm&quot;, dpi = 150)</code></pre>
+</div>
 
 
 
