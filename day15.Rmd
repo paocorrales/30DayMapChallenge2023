@@ -1,0 +1,95 @@
+---
+title: 'Día 15: Open Street Map'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+library(ggplot2)
+library(dplyr)
+library(osmdata)
+```
+
+## Cómo funciona osmdata?
+
+Es la primera vez que voy a usar datos de Open Street Map pero gracias al ser humano que creo un paquete para interactual con la API. Obvio el paquete es parte de la suite de rOpenSci.
+
+Parece que con `available_features()` podemos ver una lista de features, y además cada una tiene tags (`available_tags()`). Algunas features tiene muchas tags, otras 1 (yes/no).
+
+```{r}
+head(available_features())
+available_tags("bicycle_road")
+```
+
+Pero primero hay que definir el área con `getbb()`, bb viene de bounding box. La función `opq()` crea una "overpass query", que calculo que es una consulta de los datos dentro de la región definida por `getbb()`.
+
+```{r}
+ba_bb <- getbb("Buenos Aires")
+
+ba_bb %>%
+  opq()
+```
+Si hipotéticamente quisiera datos de bicisendas en Buenos Aires puedo acceder a esos datos usando la función `add_osm_fueature()` que agrega una feature a la consulta y luego `osmdata_sf()` que es la que finalmente devuelve los datos, en este caso en formato sf.
+
+```{r}
+bicisendas <- 
+  ba_bb %>%
+  opq() %>% 
+  add_osm_feature(key = "bicycle_road") %>% 
+  osmdata_sf()
+```
+Pero lo que devuelve no es muy alentador. Hay datos de bicisendas y estaciones en OSM pero esta no parece ser la manera de acceder.
+
+```{r}
+mapa_barrios <- sf::st_read("https://cdn.buenosaires.gob.ar/datosabiertos/datasets/ministerio-de-educacion/barrios/barrios.geojson")
+
+bicisendas$osm_points %>% 
+  ggplot() +
+  geom_sf(data = mapa_barrios) +
+  geom_sf()
+```
+
+Revisando tanto la web https://www.openstreetmap.org/ como la wiki https://wiki.openstreetmap.org/wiki/Map_features, finalmente resultó que la key es "route" y el value es "bicycle". Mucho ctrl+f en esas páginas y todo resuelto.
+
+
+```{r}
+bicisendas <- 
+  ba_bb %>%
+  opq() %>% 
+  add_osm_feature(key = "route", value = "bicycle") %>% 
+  osmdata_sf()
+```
+
+Yey! Es todo lo que necesitaba, ya se usar OSM (?)
+
+```{r}
+ggplot() +
+  geom_sf(data = mapa_barrios) +
+  geom_sf(data = bicisendas$osm_lines, color = "darkorange")
+```
+
+```{r}
+bicisendas$osm_lines %>% 
+  mutate(oneway = ifelse(is.na(`oneway:bicycle`), "no", `oneway:bicycle`)) %>%
+  ggplot() +
+  geom_sf(data = mapa_barrios, fill = "grey98") +
+  geom_sf(aes(color = oneway)) +
+  scale_color_manual(values = c("darkorange", "cyan4"), labels = c("Sí", "No")) +
+  labs(x = NULL, y = NULL, color = "Doble sentido?",
+       title = "Red de bicisendas en la Ciudad de Buenos Aires",
+       caption = "Fuente: Open Street Map") +
+  theme_void(base_size = 10,
+             base_family = "Roboto Condensed") +
+  theme(plot.title.position = "plot",
+        plot.title = ggtext::element_textbox_simple(face = "bold"),
+        plot.caption = element_text(hjust = 0),
+        legend.position = c(0.75, 0.12),
+        plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm"))
+
+# ggsave("day15.png", device = png, type = "cairo", bg = "white", width = 10, height = 12, units = "cm", dpi = 150)
+```
+
