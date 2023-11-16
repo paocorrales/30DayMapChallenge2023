@@ -1,0 +1,69 @@
+---
+title: 'Día 16: Oceanía'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
+
+library(ggplot2)
+library(dplyr)
+library(osmdata)
+```
+
+## R Markdown
+
+Hoy vamos a darle un poco de amor a Nueva Zelanda porque veo muchos mapas de Australia. En particular voy a graficar areas protegidas. De nuevo como ayer, fue todo un tema descubrir el nombre de las cosas em OSM. Probé con "national_park", "forest" y finalmente "protected_area" dió frutos. También descubri que la región que devuelve `getbb()` para Nueva Zelanda tiene un error, así que lo corregí a mano.
+
+
+```{r}
+nz_bb <- getbb("New Zealand")
+nz_bb[1:1] <- 166
+
+parques <- 
+  nz_bb %>%
+  opq() %>% 
+  add_osm_feature(key = "boundary", value = "protected_area") %>% 
+  osmdata_sf()
+```
+
+El desafío autoimpuesto de hoy fue graficar un mapa adentro del otro. Con `ggplotGrob()` generé un "graphical object" qu después puedo incertar en un gráfico más grande con `annotation_custom()`. Esto siempre es bastante artesanal pero creo que el resultado quedó bien. 
+
+```{r}
+mapa_nz <- rnaturalearth::ne_countries(country = "New Zealand", returnclass = "sf", scale = 10)
+
+egmont <- ggplotGrob( ggplot(parques$osm_polygons) +
+                        geom_sf(color = "darkgreen", fill = "darkgreen") +
+                        coord_sf(xlim = c(173.85, 174.25), ylim = c(-39.45, -39.10), expand = FALSE) +
+                        theme_void())
+
+all <- ggplot(parques$osm_multipolygons) +
+  geom_sf(data = mapa_nz, fill = "grey98") +
+  geom_sf(color = "darkgreen", fill = "darkgreen") +
+  ggforce::geom_mark_circle(aes(label = "Parque Nacional Egmont", x = 174, y = -39.3),
+                            x0 = 168, y0 = -39.1,
+                            label.fontsize = 9, 
+                            con.cap = unit(0, "mm"),
+                            expand = unit(2, "mm")) +
+  coord_sf(xlim = c(166, 179), ylim = c(-48, -34), expand = FALSE) +
+  labs(x = NULL, y = NULL, color = "Doble sentido?",
+       title = "Áreas protegidas en Nueva Zelanda",
+       caption = "Fuente: Open Street Map") +
+  theme_minimal(base_size = 10,
+                base_family = "Roboto Condensed") +
+  theme(plot.title.position = "plot",
+        plot.title = element_text(face = "bold"),
+        plot.caption = element_text(hjust = 1),
+        legend.position = c(0.75, 0.12),
+        plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm"))
+
+
+all + annotation_custom(egmont, xmin = 168, xmax = 171, ymin = -38)
+
+# ggsave("day16.png", device = png, type = "cairo", bg = "white", width = 10, height = 14, units = "cm", dpi = 150)
+```
+
