@@ -11,7 +11,7 @@
 
 
 
-<title>Día 12: América del Sur</title>
+<title>Día 16: Oceanía</title>
 
 <script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -311,48 +311,65 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Día 12: América del Sur</h1>
+<h1 class="title toc-ignore">Día 16: Oceanía</h1>
 
 </div>
 
 
-<p>Siempre hay algo de estos desafíos que me lleva tiempo pero que al
-mismo tiempo implica aprender algo nuevo. En este caso usé datos de
-topografía que ni me tengo que descargar porque metR tinene una función
-<code>GetTopography()</code> que los descarga desde ETOPO1 Global Relief
-Model (si, gracias Elio por salvar mi dorctorado).</p>
-<p>Esta vez me puse a jugar con las paletas de colores, y miercoles que
-hay paletas de colores para tirar para arriba. Si están buscando alguna,
-les recomiendo <a
-href="https://github.com/EmilHvitfeldt/r-color-palettes">este
-repositorio</a> de Emil Hvitfeldt.</p>
-<p>Me decidí por la paleta “fes” del paquete <code>scico</code> que
-tiene pinta de topografía y además una buena interfaz con ggplot2.</p>
-<pre class="r"><code>topo &lt;- GetTopography(270, 330, 20, -60, resolution = 0.1)
+<div id="r-markdown" class="section level2">
+<h2>R Markdown</h2>
+<p>Hoy vamos a darle un poco de amor a Nueva Zelanda porque veo muchos
+mapas de Australia. En particular voy a graficar areas protegidas. De
+nuevo como ayer, fue todo un tema descubrir el nombre de las cosas em
+OSM. Probé con “national_park”, “forest” y finalmente “protected_area”
+dió frutos. También descubri que la región que devuelve
+<code>getbb()</code> para Nueva Zelanda tiene un error, así que lo
+corregí a mano.</p>
+<pre class="r"><code>nz_bb &lt;- getbb(&quot;New Zealand&quot;)
+nz_bb[1:1] &lt;- 166
 
-mapa &lt;- rnaturalearth::ne_countries(continent = c(&quot;South America&quot;), returnclass = &quot;sf&quot;)
+parques &lt;- 
+  nz_bb %&gt;%
+  opq() %&gt;% 
+  add_osm_feature(key = &quot;boundary&quot;, value = &quot;protected_area&quot;) %&gt;% 
+  osmdata_sf()</code></pre>
+<p>El desafío autoimpuesto de hoy fue graficar un mapa adentro del otro.
+Con <code>ggplotGrob()</code> generé un “graphical object” qu después
+puedo incertar en un gráfico más grande con
+<code>annotation_custom()</code>. Esto siempre es bastante artesanal
+pero creo que el resultado quedó bien.</p>
+<pre class="r"><code>mapa_nz &lt;- rnaturalearth::ne_countries(country = &quot;New Zealand&quot;, returnclass = &quot;sf&quot;, scale = 10)
 
-ggplot(topo, aes(ConvertLongitude(lon), lat)) +
-  geom_contour_fill(aes(z = h, fill = after_stat(level)), 
-                    clip = mapa, 
-                    breaks = seq(0, 7000, 250)) +
-  scico::scale_fill_scico_d(palette = &quot;fes&quot;, begin = 0.505,
-                            labels = function(x) JumpBy(x, 3, fill = &quot;&quot;),
-                            guide = guide_colorsteps(barwidth = 0.5,
-                                                     barheight = 15)) +
-  geom_sf(data = mapa, inherit.aes = FALSE, 
-          fill = NA, 
-          color = &quot;white&quot;,
-          linewidth = 0.1) +
-  labs(x = NULL, y = NULL, fill = &quot;[m]&quot;,
-       title = &quot;Topografía de América del Sur&quot;,
-       caption = &quot;Fuente: ETOPO1 Global Relief Model&quot;) +
+egmont &lt;- ggplotGrob( ggplot(parques$osm_polygons) +
+                        geom_sf(color = &quot;darkgreen&quot;, fill = &quot;darkgreen&quot;) +
+                        coord_sf(xlim = c(173.85, 174.25), ylim = c(-39.45, -39.10), expand = FALSE) +
+                        theme_void())
+
+all &lt;- ggplot(parques$osm_multipolygons) +
+  geom_sf(data = mapa_nz, fill = &quot;grey98&quot;) +
+  geom_sf(color = &quot;darkgreen&quot;, fill = &quot;darkgreen&quot;) +
+  ggforce::geom_mark_circle(aes(label = &quot;Parque Nacional Egmont&quot;, x = 174, y = -39.3),
+                            x0 = 168, y0 = -39.1,
+                            label.fontsize = 9, 
+                            con.cap = unit(0, &quot;mm&quot;),
+                            expand = unit(2, &quot;mm&quot;)) +
+  coord_sf(xlim = c(166, 179), ylim = c(-48, -34), expand = FALSE) +
+  labs(x = NULL, y = NULL, color = &quot;Doble sentido?&quot;,
+       title = &quot;Áreas protegidas en Nueva Zelanda&quot;,
+       caption = &quot;Fuente: Open Street Map&quot;) +
   theme_minimal(base_size = 10,
-                base_family = &quot;Roboto Condensed Light&quot;) +
+                base_family = &quot;Roboto Condensed&quot;) +
   theme(plot.title.position = &quot;plot&quot;,
-        plot.title = element_text(face = &quot;bold&quot;))</code></pre>
-<p><img src="day12_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
-<pre class="r"><code># ggsave(&quot;day12.png&quot;, device = png, type = &quot;cairo&quot;, bg = &quot;white&quot;, width = 12, height = 16, units = &quot;cm&quot;, dpi = 150)</code></pre>
+        plot.title = element_text(face = &quot;bold&quot;),
+        plot.caption = element_text(hjust = 1),
+        legend.position = c(0.75, 0.12),
+        plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), &quot;cm&quot;))
+
+
+all + annotation_custom(egmont, xmin = 168, xmax = 171, ymin = -38)</code></pre>
+<p><img src="day16_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<pre class="r"><code># ggsave(&quot;day16.png&quot;, device = png, type = &quot;cairo&quot;, bg = &quot;white&quot;, width = 10, height = 14, units = &quot;cm&quot;, dpi = 150)</code></pre>
+</div>
 
 
 
