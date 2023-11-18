@@ -1,0 +1,53 @@
+---
+title: 'Día 17: Flow'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(metR)
+library(ggplot2)
+library(dplyr)
+library(data.table)
+```
+
+## Datos
+
+El detalle exacto de los datos es un poco anegdotico hoy porque estaba más interesada en la pinta, en lo que me imagino cuando alguien me dice "flow" o "flujo". Obvio que pienso en fluidos geofísicos, en el aire y el agua. Así que fui directo a buscar datos que más o menos conosco: [ORAS5 global ocean reanalysis monthly data from 1958 to present](https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-oras5?tab=overview). Descargué la velocidad media para octubre de 2023 en todos los niveles (porque no había otra opción) pero me quedo solo con la velocidad cerca de superficie. 
+
+```{r}
+
+velocidad <- ReadNetCDF("datos/vomecrty_control_monthly_highres_3D_202310_OPER_v0.1.nc", vars = c("vomecrty", "nav_lat", "nav_lon"),
+           subset = list(depthv = c(0, 1))) %>% 
+  .[, vozocrtx := ReadNetCDF("datos/vozocrtx_control_monthly_highres_3D_202310_OPER_v0.1.nc", vars = "vozocrtx", 
+           subset = list(depthu = c(0, 1)), out = "vector")]
+
+```
+Quise agregar un mapa pero resulta que estos datos tienen la latitud y longitud como variables en una reticula irregular y no hay datos de la proyección así que imposible graficar en coordenadas y que las cosas se vean bien.  
+
+El ojo entrenado va a reconocer rápidamente la corriente de Malvinas y la de Brasil y hasta capaz la corriente ecuatorial sur. 
+
+```{r}
+velocidad %>% 
+  .[, spd := sqrt(vozocrtx^2 + vomecrty^2)] %>% 
+  .[x %between% c(750, 1100) & y %between% c(0, 580)] %>%
+  ggplot(aes(x, y)) +
+  geom_arrow(data = function(x) x[is.cross(x, y, skip = 1)], 
+             aes(dx = vozocrtx, dy = vomecrty, color = spd)) +
+  scale_mag(max_size = 0.5, guide = NULL) +
+  scale_color_distiller(palette = "Blues", direction = 1, guide = NULL) +
+  coord_equal(ratio = 1/1.5, expand = FALSE) +
+   labs(x = NULL, y = NULL, fill = NULL,
+       title = "Velocidad del agua en la superficie del mar",
+       subtitle = "Promedio mensual para octubre de 2023",
+       caption = "Fuente: ORAS5 - Reanalisis Oceánico Global") +
+  theme_void(base_size = 10,
+                base_family = "Roboto Condensed Light") +
+  theme(plot.title = element_text(face = "bold"),
+        plot.margin = unit(c(0.3, 0.3, 0.3, 0.3), "cm"))
+  
+  
+# ggsave("day17.png", device = png, type = "cairo", bg = "white", width = 10, height = 12, units = "cm", dpi = 150)
+```
+
