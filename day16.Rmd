@@ -44,7 +44,7 @@ egmont <- ggplotGrob( ggplot(parques$osm_polygons) +
 all <- ggplot(parques$osm_multipolygons) +
   geom_sf(data = mapa_nz, fill = "grey98") +
   geom_sf(color = "darkgreen", fill = "darkgreen") +
-  ggforce::geom_mark_circle(aes(label = "Parque Nacional Egmont", x = 174, y = -39.3),
+  ggforce::geom_mark_circle(aes(label = "Taranaki", x = 174, y = -39.3),
                             x0 = 168, y0 = -39.1,
                             label.fontsize = 9, 
                             con.cap = unit(0, "mm"),
@@ -64,6 +64,6 @@ all <- ggplot(parques$osm_multipolygons) +
 
 all + annotation_custom(egmont, xmin = 168, xmax = 171, ymin = -38)
 
-# ggsave("day16.png", device = png, type = "cairo", bg = "white", width = 10, height = 14, units = "cm", dpi = 150)
+ggsave("day16.png", device = png, type = "cairo", bg = "white", width = 10, height = 14, units = "cm", dpi = 150)
 ```
 
