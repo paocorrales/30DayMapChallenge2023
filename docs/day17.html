@@ -11,7 +11,7 @@
 
 
 
-<title>Día 16: Oceanía</title>
+<title>Día 17: Flow</title>
 
 <script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -314,64 +314,52 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Día 16: Oceanía</h1>
+<h1 class="title toc-ignore">Día 17: Flow</h1>
 
 </div>
 
 
-<div id="r-markdown" class="section level2">
-<h2>R Markdown</h2>
-<p>Hoy vamos a darle un poco de amor a Nueva Zelanda porque veo muchos
-mapas de Australia. En particular voy a graficar areas protegidas. De
-nuevo como ayer, fue todo un tema descubrir el nombre de las cosas em
-OSM. Probé con “national_park”, “forest” y finalmente “protected_area”
-dió frutos. También descubri que la región que devuelve
-<code>getbb()</code> para Nueva Zelanda tiene un error, así que lo
-corregí a mano.</p>
-<pre class="r"><code>nz_bb &lt;- getbb(&quot;New Zealand&quot;)
-nz_bb[1:1] &lt;- 166
-
-parques &lt;- 
-  nz_bb %&gt;%
-  opq() %&gt;% 
-  add_osm_feature(key = &quot;boundary&quot;, value = &quot;protected_area&quot;) %&gt;% 
-  osmdata_sf()</code></pre>
-<p>El desafío autoimpuesto de hoy fue graficar un mapa adentro del otro.
-Con <code>ggplotGrob()</code> generé un “graphical object” qu después
-puedo incertar en un gráfico más grande con
-<code>annotation_custom()</code>. Esto siempre es bastante artesanal
-pero creo que el resultado quedó bien.</p>
-<pre class="r"><code>mapa_nz &lt;- rnaturalearth::ne_countries(country = &quot;New Zealand&quot;, returnclass = &quot;sf&quot;, scale = 10)
-
-egmont &lt;- ggplotGrob( ggplot(parques$osm_polygons) +
-                        geom_sf(color = &quot;darkgreen&quot;, fill = &quot;darkgreen&quot;) +
-                        coord_sf(xlim = c(173.85, 174.25), ylim = c(-39.45, -39.10), expand = FALSE) +
-                        theme_void())
-
-all &lt;- ggplot(parques$osm_multipolygons) +
-  geom_sf(data = mapa_nz, fill = &quot;grey98&quot;) +
-  geom_sf(color = &quot;darkgreen&quot;, fill = &quot;darkgreen&quot;) +
-  ggforce::geom_mark_circle(aes(label = &quot;Taranaki&quot;, x = 174, y = -39.3),
-                            x0 = 168, y0 = -39.1,
-                            label.fontsize = 9, 
-                            con.cap = unit(0, &quot;mm&quot;),
-                            expand = unit(2, &quot;mm&quot;)) +
-  coord_sf(xlim = c(166, 179), ylim = c(-48, -34), expand = FALSE) +
-  labs(x = NULL, y = NULL, color = &quot;Doble sentido?&quot;,
-       title = &quot;Áreas protegidas en Nueva Zelanda&quot;,
-       caption = &quot;Fuente: Open Street Map&quot;) +
-  theme_minimal(base_size = 10,
-                base_family = &quot;Roboto Condensed&quot;) +
-  theme(plot.title.position = &quot;plot&quot;,
-        plot.title = element_text(face = &quot;bold&quot;),
-        plot.caption = element_text(hjust = 1),
-        legend.position = c(0.75, 0.12),
-        plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), &quot;cm&quot;))
-
-
-all + annotation_custom(egmont, xmin = 168, xmax = 171, ymin = -38)</code></pre>
-<p><img src="day16_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
-<pre class="r"><code>ggsave(&quot;day16.png&quot;, device = png, type = &quot;cairo&quot;, bg = &quot;white&quot;, width = 10, height = 14, units = &quot;cm&quot;, dpi = 150)</code></pre>
+<div id="datos" class="section level2">
+<h2>Datos</h2>
+<p>El detalle exacto de los datos es un poco anegdotico hoy porque
+estaba más interesada en la pinta, en lo que me imagino cuando alguien
+me dice “flow” o “flujo”. Obvio que pienso en fluidos geofísicos, en el
+aire y el agua. Así que fui directo a buscar datos que más o menos
+conosco: <a
+href="https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-oras5?tab=overview">ORAS5
+global ocean reanalysis monthly data from 1958 to present</a>. Descargué
+la velocidad media para octubre de 2023 en todos los niveles (porque no
+había otra opción) pero me quedo solo con la velocidad cerca de
+superficie.</p>
+<pre class="r"><code>velocidad &lt;- ReadNetCDF(&quot;datos/vomecrty_control_monthly_highres_3D_202310_OPER_v0.1.nc&quot;, vars = c(&quot;vomecrty&quot;, &quot;nav_lat&quot;, &quot;nav_lon&quot;),
+           subset = list(depthv = c(0, 1))) %&gt;% 
+  .[, vozocrtx := ReadNetCDF(&quot;datos/vozocrtx_control_monthly_highres_3D_202310_OPER_v0.1.nc&quot;, vars = &quot;vozocrtx&quot;, 
+           subset = list(depthu = c(0, 1)), out = &quot;vector&quot;)]</code></pre>
+<p>Quise agregar un mapa pero resulta que estos datos tienen la latitud
+y longitud como variables en una reticula irregular y no hay datos de la
+proyección así que imposible graficar en coordenadas y que las cosas se
+vean bien.</p>
+<p>El ojo entrenado va a reconocer rápidamente la corriente de Malvinas
+y la de Brasil y hasta capaz la corriente ecuatorial sur.</p>
+<pre class="r"><code>velocidad %&gt;% 
+  .[, spd := sqrt(vozocrtx^2 + vomecrty^2)] %&gt;% 
+  .[x %between% c(750, 1100) &amp; y %between% c(0, 580)] %&gt;%
+  ggplot(aes(x, y)) +
+  geom_arrow(data = function(x) x[is.cross(x, y, skip = 1)], 
+             aes(dx = vozocrtx, dy = vomecrty, color = spd)) +
+  scale_mag(max_size = 0.5, guide = NULL) +
+  scale_color_distiller(palette = &quot;Blues&quot;, direction = 1, guide = NULL) +
+  coord_equal(ratio = 1/1.5, expand = FALSE) +
+   labs(x = NULL, y = NULL, fill = NULL,
+       title = &quot;Velocidad del agua en la superficie del mar&quot;,
+       subtitle = &quot;Promedio mensual para octubre de 2023&quot;,
+       caption = &quot;Fuente: ORAS5 - Reanalisis Oceánico Global&quot;) +
+  theme_void(base_size = 10,
+                base_family = &quot;Roboto Condensed Light&quot;) +
+  theme(plot.title = element_text(face = &quot;bold&quot;),
+        plot.margin = unit(c(0.3, 0.3, 0.3, 0.3), &quot;cm&quot;))</code></pre>
+<p><img src="day17_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<pre class="r"><code># ggsave(&quot;day17.png&quot;, device = png, type = &quot;cairo&quot;, bg = &quot;white&quot;, width = 10, height = 12, units = &quot;cm&quot;, dpi = 150)</code></pre>
 </div>
 
 
