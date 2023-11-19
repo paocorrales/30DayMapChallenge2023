@@ -37,6 +37,8 @@ navbar:
         href: day16.html
       - text: "Día 17: Flow"
         href: day17.html
+      - text: "Día 18: Atmósfera"
+        href: day18.html
 output_dir: docs
 output:
   html_document:
