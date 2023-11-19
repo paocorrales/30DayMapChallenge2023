@@ -1,0 +1,78 @@
+---
+title: 'Día 18: Atmósfera'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
+
+library(metR)
+library(ggplot2)
+library(dplyr)
+library(data.table)
+```
+
+## Datos 
+
+Como ayer usé datos del reanálisis oceánico, hoy le toca a la atmósfera. Los datos salen de nuevo del Climate Data Store y esta vez voy a usar el paquete `ecmwfr` para descargarlos automáticamente.
+
+```{r}
+request <- list(
+  format = "netcdf",
+  product_type = "monthly_averaged_reanalysis",
+  variable = "geopotential",
+  pressure_level = c("200", "500", "1000"),
+  year = "2023",
+  month = "10",
+  time = "00:00",
+  dataset_short_name = "reanalysis-era5-pressure-levels-monthly-means",
+  target = "geopotencial_era5.nc"
+)
+
+ecmwfr::wf_request(request, user = "94903", path = "datos/")
+
+```
+Voy a trabajar con datos de geopotencial que viene a ser a que altura desde la superficie me encuentro con una determinada presión atmosférica y da una idea de donde están los centros de presión y la pinta del viento geostrófico. Esto es la media mensual para octubre de 2023.
+
+```{r}
+sf::sf_use_s2(FALSE)
+mapa <- rnaturalearth::ne_coastline(returnclass = "sf") %>% 
+  sf::st_crop(xmin = -180, xmax = 180, ymin = -90, ymax = -5)
+
+z <- ReadNetCDF("datos/geopotencial_era5.nc")
+
+grid <- expand.grid(longitude = seq(0, 360, by = 2.5),
+                    latitude = seq(-90, 90, by = 2.5))
+
+z %>% 
+  .[level == 200] %>% 
+  .[latitude < 0] %>% 
+  .[, gh.z := Anomaly(z), by = .(latitude)] %>% 
+  .[, c("u", "v") := GeostrophicWind(gh.z, longitude, latitude)] %>% 
+  .[grid, on = .NATURAL] %>% 
+  na.omit() %>% 
+  ggplot(aes(longitude, latitude)) +
+  geom_contour_fill(aes(z = gh.z, fill = after_stat(level)), xwrap = c(0, 360)) +
+  geom_sf(data = mapa, inherit.aes = FALSE) +
+  geom_streamline(aes(dx = dlon(u, latitude), dy = dlat(v)), 
+                  dt = 100, S = 100, 
+                  xwrap = c(0, 360), arrow = NULL) +
+  scale_fill_divergent_discretised(guide = guide_colorsteps(barwidth = 0.5,
+                                                            barheight = 15)) +
+  coord_sf(crs = "+proj=laea +lat_0=-90", default_crs = "+proj=lonlat") +
+  labs(x = NULL, y = NULL, fill = NULL,
+       title = "Anomalía de la altura geopotencial en 200 hPa y viento geostrófico",
+       subtitle = "Promedio mensual para octubre de 2023",
+       caption = "Fuente: ERA5 - Reanalisis Europeo") +
+  theme_void(base_size = 10,
+             base_family = "Roboto Condensed Light") +
+  theme(plot.title = element_text(face = "bold"),
+        plot.margin = unit(c(0.3, 0.3, 0.3, 0.3), "cm"))
+
+# ggsave("day18.png", device = png, type = "cairo", bg = "white", width = 12, height = 11, units = "cm", dpi = 150)
+```
+
