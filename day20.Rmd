@@ -1,0 +1,46 @@
+---
+title: 'Día 20: Outdoors'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+library(dplyr)
+
+```
+
+En Septiembre caminé 90 km a lo largo de la West Highland Way, fueron 6 días de carpa y midges :D
+
+```{r}
+whw <- sf::st_read("datos/West-Highland-Way.kml")
+towns <- sf::st_read("datos/towns-whw.kml") %>% 
+  mutate(as_tibble(sf::st_coordinates(geometry)))
+
+topo <- metR::GetTopography(354.5, 356, 57, 56.2, resolution = 0.02) %>% 
+  .[, lon := ConvertLongitude(lon)]
+```
+
+
+```{r}
+ggplot(whw) +
+  geom_contour_fill(data = topo, 
+                    aes(x = lon, y = lat, z = h, fill = after_stat(level)),
+                    breaks = seq(-10, 1100, 75)) +
+  scale_fill_grey(start = 1, end = 0, guide = guide_colorsteps(barwidth = 0.5,
+                                                     barheight = 15)) +
+  geom_sf(color = "purple") +
+  geom_point(data = towns, aes(X, Y), fill = "purple", shape = 21) +
+  ggrepel::geom_label_repel(data = towns, aes(label = Name, x = X, y = Y), nudge_x = 0.5) +
+  coord_sf(expand = FALSE) +
+    labs(x = NULL, y = NULL, fill = NULL,
+       title = "West Highland Way",
+       subtitle = "(Solo los 90 km que caminé)") +
+  theme_minimal(base_size = 10,
+                base_family = "Roboto Condensed Light") +
+  theme(plot.title = element_text(face = "bold"))
+ 
+# ggsave("day20.png", device = png, type = "cairo", bg = "white", width = 12, height = 11, units = "cm", dpi = 150)
+```
+
