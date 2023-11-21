@@ -11,7 +11,7 @@
 
 
 
-<title>Día 9: Hexágonos</title>
+<title>Día 20: Outdoors</title>
 
 <script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -323,114 +323,54 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Día 9: Hexágonos</h1>
+<h1 class="title toc-ignore">Día 20: Outdoors</h1>
 
 </div>
 
 
-<div id="datos" class="section level2">
-<h2>Datos</h2>
-<p>Yo se que parezco un disco rayado pero posta que tenemos pocas
-estaciones meteorológicas en Argentina y hay que mostrarlo.</p>
-<pre class="r"><code>estaciones &lt;- fread(&quot;https://raw.githubusercontent.com/eliocamp/r-clima/fffb3fa596bc73afeeaa2a6296804da436e82fd3/datos/estaciones_smn.csv&quot;) %&gt;% 
-  .[provincia != &quot;ANTARTIDA&quot;] # Para hacer un mapa mas chiquito sin la Antartida
-
-map_proj &lt;- &quot;+proj=lcc +lat_1=-30.965999603271484375 +lat_2=-30.965999603271484375 +lat_0=-30.96600341796875 +lon_0=-63.5670166015625 +a=6370000 +b=6370000&quot;
-
-mapa &lt;- rnaturalearth::ne_states(c(&quot;Argentina&quot;, &quot;Falkland Islands&quot;), returnclass = &quot;sf&quot;)</code></pre>
-<p>Y yo pensé que esto iba a ser una vueltita a la plaza pero resulta
-que graficar hexágonos sobre un mapa no es tan simple como parece.
-Gracias a quien se le ocurrió esto como consigna del día.</p>
-<pre class="r"><code>estaciones %&gt;% 
-  ggplot(aes(lon, lat)) +
-  geom_sf(data = mapa, inherit.aes = FALSE, fill = &quot;grey98&quot;) +
-  geom_hex()</code></pre>
-<p><img src="day9_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
-<p>En el mapa los hexágonos están deformados porque tiene el mismo ancho
-y alto, que luego se grafica en un mapa donde las coordenadas no cambian
-igual en los 2 ejes. Esto es un problema también porque de la manera que
-está orientado el hexágono que genera geom_hex() implica que el alto y
-el ancho presentan cosas distintas. El alto va de vertice a vertice y el
-ancho de lado a lado.</p>
-<p>Vamos a seguir a Andrew P. Wheeler que hizo todo el trabajo <a
-href="https://andrewpwheeler.com/2019/08/07/making-a-hexbin-map-in-ggplot/">acá</a>
-pero españolizado.</p>
-<p>Primero, <code>ancho_hex()</code> devuelve el ancho del hexágono para
-un determinado alto.</p>
-<pre class="r"><code>ancho_hex &lt;- function(alto){
-  tri_side &lt;- alto/2
-  sma_side &lt;- alto/4
-  ancho &lt;- 2*sqrt(tri_side^2 - sma_side^2)
-  return(ancho)
-}
-
-# Para un exagono de 1000 metros de alto el ancho es:
-
-ancho_hex(1000)</code></pre>
-<pre><code>## [1] 866.0254</code></pre>
-<p>Segundo, calculamos el área del hexágono. Esto es re importante a la
-hora de definir hexágonos que representen por ejemplo cuantas estaciones
-meteorológicas hay en un área de 1000 metros cuadrados. En este caso, el
-calculo se hace en base al lado del hexágono.</p>
-<pre class="r"><code>hex_area &lt;- function(lado){
-  area &lt;- 6 * ((sqrt(3)*lado^2)/4)
-  return(area)
-}</code></pre>
-<p>Finalmente, si lo que queremos es el ancho y alto del hexágono para
-definirlo en el <code>geom_hex()</code> hacemos la función inversa:</p>
-<pre class="r"><code>hex_dim &lt;- function(area){
-  num &lt;- 4*area
-  den &lt;- 6*sqrt(3)
-  alto &lt;- 2*sqrt(num/den)
-  ancho &lt;- ancho_hex(alto)
-  return(c(alto, ancho))
-}
-
-# Si queremos un hexágono de 1000 m^2
-
-hex_dim(1000^2)</code></pre>
-<pre><code>## [1] 1240.806 1074.570</code></pre>
-<p>Ahora con esta función podemos intentar un mapa. Igual no es grátis,
-ahora que estamos pensando los hexágonos en unidades de metros, también
-tenemos que transformar nuestros datos y el mapa para que estén en
-función de eso en vez de latitud y longitud. Pero si algo me enseñaron
-mis 6 años de doctorado es a proyectar y desproyectar.</p>
-<p>En este caso uso una proyección de Lambert que es “equal area”.</p>
-<pre class="r"><code>map_proj &lt;- &quot;+proj=lcc +lat_1=-30.965999603271484375 +lat_2=-30.965999603271484375 +lat_0=-30.96600341796875 +lon_0=-63.5670166015625 +a=6370000 +b=6370000&quot;
-
-mapa &lt;- rnaturalearth::ne_states(c(&quot;Argentina&quot;, &quot;Falkland Islands&quot;), returnclass = &quot;sf&quot;) %&gt;% 
-  sf::st_transform(crs = map_proj)
-
-estaciones %&gt;% 
-  .[, c(&quot;x&quot;, &quot;y&quot;) := proj4::project(list(lon, lat), proj = map_proj, inverse = FALSE)] %&gt;% 
-  ggplot(aes(x, y)) +
-  geom_sf(data = mapa, inherit.aes = FALSE, fill = &quot;grey98&quot;) +
-  geom_hex(binwidth = hex_dim(10000^2))</code></pre>
-<p><img src="day9_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
-<p>Hexágonos de 10 km cuadrados son demasiado chicos pero jugando un
-poco con esto y teniendo en cuenta la realidad podemos llegar un
-resultado aceptable</p>
-<pre class="r"><code>estaciones %&gt;% 
-  .[, c(&quot;x&quot;, &quot;y&quot;) := proj4::project(list(lon, lat), proj = map_proj, inverse = FALSE)] %&gt;% 
-  ggplot(aes(x, y)) +
-  geom_sf(data = mapa, inherit.aes = FALSE, fill = &quot;grey98&quot;) +
-  geom_hex(binwidth = hex_dim(200000^2), alpha = 0.8, color = &quot;black&quot;, linewidth = 0.1,
-           aes(fill = after_stat(count))) +
-    scale_fill_viridis_b(breaks = c(seq(0, 10, 1), Inf),
-                        guide = guide_colorsteps(barwidth = 0.5,
-                                                 barheight = 15),
-                        direction = 1) +
-  labs(x = NULL, y = NULL, fill = NULL,
-       title = &quot;Estaciones meteorológicas cada 200 km²&quot;,
-       subtitle = &quot;10 estaciones están concentradas en el AMBA&quot;,
-       caption = &quot;Fuente: Servicio Meteorológico Nacional&quot;) +
-  theme_minimal(base_size = 8,
+<p>En Septiembre caminé 90 km a lo largo de la West Highland Way, fueron
+6 días de carpa y midges :D</p>
+<pre class="r"><code>whw &lt;- sf::st_read(&quot;datos/West-Highland-Way.kml&quot;)</code></pre>
+<pre><code>## Reading layer `West Highland Way&#39; from data source 
+##   `/home/pao/RStuff/30DayMapChallenge2023/datos/West-Highland-Way.kml&#39; 
+##   using driver `LIBKML&#39;
+## Simple feature collection with 5 features and 11 fields
+## Geometry type: LINESTRING
+## Dimension:     XYZ
+## Bounding box:  xmin: -5.114034 ymin: 56.33057 xmax: -4.632661 ymax: 56.82181
+## z_range:       zmin: 0 zmax: 0
+## Geodetic CRS:  WGS 84</code></pre>
+<pre class="r"><code>towns &lt;- sf::st_read(&quot;datos/towns-whw.kml&quot;) %&gt;% 
+  mutate(as_tibble(sf::st_coordinates(geometry)))</code></pre>
+<pre><code>## Reading layer `Towns &amp; villages&#39; from data source 
+##   `/home/pao/RStuff/30DayMapChallenge2023/datos/towns-whw.kml&#39; 
+##   using driver `LIBKML&#39;
+## Simple feature collection with 6 features and 11 fields
+## Geometry type: POINT
+## Dimension:     XYZ
+## Bounding box:  xmin: -5.114034 ymin: 56.33057 xmax: -4.713544 ymax: 56.81638
+## z_range:       zmin: 0 zmax: 0
+## Geodetic CRS:  WGS 84</code></pre>
+<pre class="r"><code>topo &lt;- metR::GetTopography(354.5, 356, 57, 56.2, resolution = 0.02) %&gt;% 
+  .[, lon := ConvertLongitude(lon)]</code></pre>
+<pre class="r"><code>ggplot(whw) +
+  geom_contour_fill(data = topo, 
+                    aes(x = lon, y = lat, z = h, fill = after_stat(level)),
+                    breaks = seq(-10, 1100, 75)) +
+  scale_fill_grey(start = 1, end = 0, guide = guide_colorsteps(barwidth = 0.5,
+                                                     barheight = 15)) +
+  geom_sf(color = &quot;purple&quot;) +
+  geom_point(data = towns, aes(X, Y), fill = &quot;purple&quot;, shape = 21) +
+  ggrepel::geom_label_repel(data = towns, aes(label = Name, x = X, y = Y), nudge_x = 0.5) +
+  coord_sf(expand = FALSE) +
+    labs(x = NULL, y = NULL, fill = NULL,
+       title = &quot;West Highland Way&quot;,
+       subtitle = &quot;(Solo los 90 km que caminé)&quot;) +
+  theme_minimal(base_size = 10,
                 base_family = &quot;Roboto Condensed Light&quot;) +
-  theme(plot.title.position = &quot;plot&quot;,
-        plot.title = element_text(face = &quot;bold&quot;))</code></pre>
-<p><img src="day9_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
-<pre class="r"><code># ggsave(&quot;day9.png&quot;, device = png, type = &quot;cairo&quot;, bg = &quot;white&quot;, width = 10, height = 18, units = &quot;cm&quot;, dpi = 150)</code></pre>
-</div>
+  theme(plot.title = element_text(face = &quot;bold&quot;))</code></pre>
+<p><img src="day20_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<pre class="r"><code># ggsave(&quot;day20.png&quot;, device = png, type = &quot;cairo&quot;, bg = &quot;white&quot;, width = 12, height = 11, units = &quot;cm&quot;, dpi = 150)</code></pre>
 
 
 
