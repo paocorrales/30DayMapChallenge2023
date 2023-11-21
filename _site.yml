@@ -41,6 +41,8 @@ navbar:
         href: day18.html
       - text: "Día 19: 5 minutos"
         href: day19.html
+      - text: "Día 20: Outdoors"
+        href: day20.html
 output_dir: docs
 output:
   html_document:
