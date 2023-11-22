@@ -11,7 +11,7 @@
 
 
 
-<title>Día 15: Open Street Map</title>
+<title>Día 21: Raster</title>
 
 <script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -326,114 +326,89 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Día 15: Open Street Map</h1>
+<h1 class="title toc-ignore">Día 21: Raster</h1>
 
 </div>
 
 
-<div id="cómo-funciona-osmdata" class="section level2">
-<h2>Cómo funciona osmdata?</h2>
-<p>Es la primera vez que voy a usar datos de Open Street Map pero
-gracias al ser humano que creo un paquete para interactual con la API.
-Obvio el paquete es parte de la suite de rOpenSci.</p>
-<p>Parece que con <code>available_features()</code> podemos ver una
-lista de features, y además cada una tiene tags
-(<code>available_tags()</code>). Algunas features tiene muchas tags,
-otras 1 (yes/no).</p>
-<pre class="r"><code>head(available_features())</code></pre>
-<pre><code>## [1] &quot;4wd_only&quot;  &quot;abandoned&quot; &quot;abutters&quot;  &quot;access&quot;    &quot;addr&quot;      &quot;addr:city&quot;</code></pre>
-<pre class="r"><code>available_tags(&quot;bicycle_road&quot;)</code></pre>
-<pre><code>## # A tibble: 1 × 2
-##   Key          Value
-##   &lt;chr&gt;        &lt;chr&gt;
-## 1 bicycle_road yes</code></pre>
-<p>Pero primero hay que definir el área con <code>getbb()</code>, bb
-viene de bounding box. La función <code>opq()</code> crea una “overpass
-query”, que calculo que es una consulta de los datos dentro de la región
-definida por <code>getbb()</code>.</p>
-<pre class="r"><code>ba_bb &lt;- getbb(&quot;Buenos Aires&quot;)
+<p>Me había olvido lo vueltero que es trabajar con datos de satélite.
+Todo lo primero son funciones para leer los datos, la proyección,
+transformar las variables, etc. También hay una escala de colores
+específica que se usa para el canal 13 de goes 16 que convertí en
+función porque la uso siempre.</p>
+<pre class="r"><code>goes_projection &lt;- function (x, y, ncfile) 
+{
+  proj_info &lt;- ncdf4::ncatt_get(ncfile, &quot;goes_imager_projection&quot;)
+  h &lt;- proj_info$perspective_point_height
+  map_proj &lt;- paste0(&quot;+proj=geos&quot;, &quot; +h=&quot;, proj_info$perspective_point_height, 
+                     &quot; +lon_0=&quot;, proj_info$longitude_of_projection_origin, 
+                     &quot; +sweep=&quot;, proj_info$sweep_angle_axis, &quot; +ellps=GRS80&quot;)
+  x_atr &lt;- ncdf4::ncatt_get(ncfile, &quot;x&quot;)
+  x &lt;- (x * x_atr$scale_factor + x_atr$add_offset) * h
+  y_atr &lt;- ncdf4::ncatt_get(ncfile, &quot;y&quot;)
+  y &lt;- (y * y_atr$scale_factor + y_atr$add_offset) * h
+  proj4::project(list(x, y), map_proj, inverse = TRUE)
+}
 
-ba_bb %&gt;%
-  opq()</code></pre>
-<pre><code>## $bbox
-## [1] &quot;-34.705637,-58.5314494,-34.5265535,-58.3351423&quot;
-## 
-## $prefix
-## [1] &quot;[out:xml][timeout:25];\n(\n&quot;
-## 
-## $suffix
-## [1] &quot;);\n(._;&gt;;);\nout body;&quot;
-## 
-## $features
-## NULL
-## 
-## $osm_types
-## [1] &quot;node&quot;     &quot;way&quot;      &quot;relation&quot;
-## 
-## attr(,&quot;class&quot;)
-## [1] &quot;list&quot;           &quot;overpass_query&quot;
-## attr(,&quot;nodes_only&quot;)
-## [1] FALSE</code></pre>
-<p>Si hipotéticamente quisiera datos de bicisendas en Buenos Aires puedo
-acceder a esos datos usando la función <code>add_osm_fueature()</code>
-que agrega una feature a la consulta y luego <code>osmdata_sf()</code>
-que es la que finalmente devuelve los datos, en este caso en formato
-sf.</p>
-<pre class="r"><code>bicisendas &lt;- 
-  ba_bb %&gt;%
-  opq() %&gt;% 
-  add_osm_feature(key = &quot;bicycle_road&quot;) %&gt;% 
-  osmdata_sf()</code></pre>
-<p>Pero lo que devuelve no es muy alentador. Hay datos de bicisendas y
-estaciones en OSM pero esta no parece ser la manera de acceder.</p>
-<pre class="r"><code>mapa_barrios &lt;- sf::st_read(&quot;https://cdn.buenosaires.gob.ar/datosabiertos/datasets/ministerio-de-educacion/barrios/barrios.geojson&quot;)</code></pre>
-<pre><code>## Reading layer `barrios&#39; from data source 
-##   `https://cdn.buenosaires.gob.ar/datosabiertos/datasets/ministerio-de-educacion/barrios/barrios.geojson&#39; 
-##   using driver `GeoJSON&#39;
-## Simple feature collection with 48 features and 5 fields
-## Geometry type: MULTIPOLYGON
-## Dimension:     XY
-## Bounding box:  xmin: -58.53152 ymin: -34.70529 xmax: -58.33515 ymax: -34.52649
-## Geodetic CRS:  WGS 84</code></pre>
-<pre class="r"><code>bicisendas$osm_points %&gt;% 
-  ggplot() +
-  geom_sf(data = mapa_barrios) +
-  geom_sf()</code></pre>
-<p><img src="day15_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
-<p>Revisando tanto la web <a href="https://www.openstreetmap.org/"
-class="uri">https://www.openstreetmap.org/</a> como la wiki <a
-href="https://wiki.openstreetmap.org/wiki/Map_features"
-class="uri">https://wiki.openstreetmap.org/wiki/Map_features</a>,
-finalmente resultó que la key es “route” y el value es “bicycle”. Mucho
-ctrl+f en esas páginas y todo resuelto.</p>
-<pre class="r"><code>bicisendas &lt;- 
-  ba_bb %&gt;%
-  opq() %&gt;% 
-  add_osm_feature(key = &quot;route&quot;, value = &quot;bicycle&quot;) %&gt;% 
-  osmdata_sf()</code></pre>
-<p>Yey! Es todo lo que necesitaba, ya se usar OSM (?)</p>
-<pre class="r"><code>ggplot() +
-  geom_sf(data = mapa_barrios) +
-  geom_sf(data = bicisendas$osm_lines, color = &quot;darkorange&quot;)</code></pre>
-<p><img src="day15_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
-<pre class="r"><code>bicisendas$osm_lines %&gt;% 
-  mutate(oneway = ifelse(is.na(`oneway:bicycle`), &quot;no&quot;, `oneway:bicycle`)) %&gt;%
-  ggplot() +
-  geom_sf(data = mapa_barrios, fill = &quot;grey98&quot;) +
-  geom_sf(aes(color = oneway)) +
-  scale_color_manual(values = c(&quot;darkorange&quot;, &quot;cyan4&quot;), labels = c(&quot;Sí&quot;, &quot;No&quot;)) +
-  labs(x = NULL, y = NULL, color = &quot;Doble sentido?&quot;,
-       title = &quot;Red de bicisendas en la Ciudad de Buenos Aires&quot;,
-       caption = &quot;Fuente: Open Street Map&quot;) +
+calculate_rad &lt;- function (rad, ncfile) 
+{
+  rad_atr &lt;- ncdf4::ncatt_get(ncfile, &quot;Rad&quot;)
+  if_else(rad %between% rad_atr$valid_range, rad, NA_real_)
+}
+
+rad_to_tb &lt;- function (rad, ncfile, h = 6.629e-34, c = 299800000, kb = 1.381e-23) 
+{
+  rad &lt;- c(rad)
+  planck_fk1 &lt;- ncdf4::ncvar_get(ncfile, &quot;planck_fk1&quot;)
+  planck_fk2 &lt;- ncdf4::ncvar_get(ncfile, &quot;planck_fk2&quot;)
+  planck_bc1 &lt;- ncdf4::ncvar_get(ncfile, &quot;planck_bc1&quot;)
+  planck_bc2 &lt;- ncdf4::ncvar_get(ncfile, &quot;planck_bc2&quot;)
+  tb &lt;- (planck_fk2/(log((planck_fk1/rad) + 1)) - planck_bc1)/planck_bc2
+  tb &lt;- tb - 273.15
+  return(tb)
+}
+
+xlim &lt;- c(2600, 3950)
+ylim &lt;- c(3700, 4750)
+
+file &lt;- &quot;datos/goes/OR_ABI-L1b-RadF-M3C13_G16_s20183262300364_e20183262311142_c20183262311197.nc&quot;
+nc &lt;- ncdf4::nc_open(file)
+
+goes &lt;- ReadNetCDF(file, 
+                   vars = c(rad = &quot;Rad&quot;, qf = &quot;DQF&quot;), 
+                   subset = list(x = xlim, y = ylim)) %&gt;% 
+  .[, rad := calculate_rad(rad, nc)] %&gt;%
+  .[, tb := rad_to_tb(rad, nc)] %&gt;%
+  .[, c(&quot;lon&quot;, &quot;lat&quot;) := goes_projection(x, y, nc)] </code></pre>
+<pre class="r"><code>scale_fill_topes &lt;- function (colours = hex, limits = c(-90, 50), breaks = seq(-90, 
+                                                                               50, 20), guide = guide_colorbar(barheight = 15), ...) 
+{
+  topes &lt;- data.table::fread(here::here(&quot;datos/paleta_topes&quot;))
+  colours &lt;- rgb(topes$V2, topes$V3, topes$V4, maxColorValue = 255)
+  scale_fill_gradientn(colours = colours, limits = limits, 
+                       breaks = breaks, guide = guide, ...)
+}
+
+mapa &lt;- rnaturalearth::ne_countries(country = &quot;Argentina&quot;, returnclass = &quot;sf&quot;) %&gt;% 
+  sf::st_transform(&quot;+proj=geos +h=35786023 +lon_0=-75 +sweep=x +ellps=GRS80&quot;)</code></pre>
+<div id="versión-con-geom_raster-y-sin-mapa" class="section level2">
+<h2>Versión con geom_raster y sin mapa :(</h2>
+<pre class="r"><code>goes %&gt;% 
+  ggplot(aes(x, y)) +
+  geom_raster(aes(fill = tb)) +
+  scale_fill_topes(guide = guide_colorbar(barwidth = 0.5,
+                                          barheight = 15)) +
+  coord_equal(expand = FALSE, ratio = 1/1.1) +
+  labs(x = NULL, y = NULL, fill = NULL,
+       title = &quot;Temperatura de brillo para el canal 13 de GOES-16&quot;,
+       subtitle = &quot;22 de noviembre de 2018&quot;,
+       caption = &quot;Fuente: ABI-GOES-16&quot;) +
   theme_void(base_size = 10,
-             base_family = &quot;Roboto Condensed&quot;) +
-  theme(plot.title.position = &quot;plot&quot;,
-        plot.title = ggtext::element_textbox_simple(face = &quot;bold&quot;),
-        plot.caption = element_text(hjust = 0),
-        legend.position = c(0.75, 0.12),
-        plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), &quot;cm&quot;))</code></pre>
-<p><img src="day15_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
-<pre class="r"><code># ggsave(&quot;day15.png&quot;, device = png, type = &quot;cairo&quot;, bg = &quot;white&quot;, width = 10, height = 12, units = &quot;cm&quot;, dpi = 150)</code></pre>
+             base_family = &quot;Roboto Condensed Light&quot;) +
+  theme(plot.title = element_text(face = &quot;bold&quot;),
+        plot.margin = unit(c(0.3, 0.3, 0.3, 0.3), &quot;cm&quot;))</code></pre>
+<p><img src="day21_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<pre class="r"><code># ggsave(&quot;day21a.png&quot;, device = png, type = &quot;cairo&quot;, bg = &quot;white&quot;, width = 14, height = 11, units = &quot;cm&quot;, dpi = 150)</code></pre>
 </div>
 
 
