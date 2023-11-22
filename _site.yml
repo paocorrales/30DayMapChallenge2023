@@ -43,6 +43,8 @@ navbar:
         href: day19.html
       - text: "Día 20: Outdoors"
         href: day20.html
+      - text: "Día 21: Raster"
+        href: day21.html
 output_dir: docs
 output:
   html_document:

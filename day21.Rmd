@@ -1,0 +1,101 @@
+---
+title: 'Día 21: Raster'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+library(dplyr)
+library(metR)
+library(data.table)
+```
+
+Me había olvido lo vueltero que es trabajar con datos de satélite. Todo lo primero son funciones para leer los datos, la proyección, transformar las variables, etc. También hay una escala de colores específica que se usa para el canal 13 de goes 16 que convertí en función porque la uso siempre.
+
+```{r}
+goes_projection <- function (x, y, ncfile) 
+{
+  proj_info <- ncdf4::ncatt_get(ncfile, "goes_imager_projection")
+  h <- proj_info$perspective_point_height
+  map_proj <- paste0("+proj=geos", " +h=", proj_info$perspective_point_height, 
+                     " +lon_0=", proj_info$longitude_of_projection_origin, 
+                     " +sweep=", proj_info$sweep_angle_axis, " +ellps=GRS80")
+  x_atr <- ncdf4::ncatt_get(ncfile, "x")
+  x <- (x * x_atr$scale_factor + x_atr$add_offset) * h
+  y_atr <- ncdf4::ncatt_get(ncfile, "y")
+  y <- (y * y_atr$scale_factor + y_atr$add_offset) * h
+  proj4::project(list(x, y), map_proj, inverse = TRUE)
+}
+
+calculate_rad <- function (rad, ncfile) 
+{
+  rad_atr <- ncdf4::ncatt_get(ncfile, "Rad")
+  if_else(rad %between% rad_atr$valid_range, rad, NA_real_)
+}
+
+rad_to_tb <- function (rad, ncfile, h = 6.629e-34, c = 299800000, kb = 1.381e-23) 
+{
+  rad <- c(rad)
+  planck_fk1 <- ncdf4::ncvar_get(ncfile, "planck_fk1")
+  planck_fk2 <- ncdf4::ncvar_get(ncfile, "planck_fk2")
+  planck_bc1 <- ncdf4::ncvar_get(ncfile, "planck_bc1")
+  planck_bc2 <- ncdf4::ncvar_get(ncfile, "planck_bc2")
+  tb <- (planck_fk2/(log((planck_fk1/rad) + 1)) - planck_bc1)/planck_bc2
+  tb <- tb - 273.15
+  return(tb)
+}
+
+xlim <- c(2600, 3950)
+ylim <- c(3700, 4750)
+
+file <- "datos/goes/OR_ABI-L1b-RadF-M3C13_G16_s20183262300364_e20183262311142_c20183262311197.nc"
+nc <- ncdf4::nc_open(file)
+
+goes <- ReadNetCDF(file, 
+                   vars = c(rad = "Rad", qf = "DQF"), 
+                   subset = list(x = xlim, y = ylim)) %>% 
+  .[, rad := calculate_rad(rad, nc)] %>%
+  .[, tb := rad_to_tb(rad, nc)] %>%
+  .[, c("lon", "lat") := goes_projection(x, y, nc)] 
+```
+
+```{r}
+scale_fill_topes <- function (colours = hex, limits = c(-90, 50), breaks = seq(-90, 
+                                                                               50, 20), guide = guide_colorbar(barheight = 15), ...) 
+{
+  topes <- data.table::fread(here::here("datos/paleta_topes"))
+  colours <- rgb(topes$V2, topes$V3, topes$V4, maxColorValue = 255)
+  scale_fill_gradientn(colours = colours, limits = limits, 
+                       breaks = breaks, guide = guide, ...)
+}
+
+mapa <- rnaturalearth::ne_countries(country = "Argentina", returnclass = "sf") %>% 
+  sf::st_transform("+proj=geos +h=35786023 +lon_0=-75 +sweep=x +ellps=GRS80")
+```
+
+
+## Versión con geom_raster y sin mapa :(
+
+```{r}
+goes %>% 
+  ggplot(aes(x, y)) +
+  geom_raster(aes(fill = tb)) +
+  scale_fill_topes(guide = guide_colorbar(barwidth = 0.5,
+                                          barheight = 15)) +
+  coord_equal(expand = FALSE, ratio = 1/1.1) +
+  labs(x = NULL, y = NULL, fill = NULL,
+       title = "Temperatura de brillo para el canal 13 de GOES-16",
+       subtitle = "22 de noviembre de 2018",
+       caption = "Fuente: ABI-GOES-16") +
+  theme_void(base_size = 10,
+             base_family = "Roboto Condensed Light") +
+  theme(plot.title = element_text(face = "bold"),
+        plot.margin = unit(c(0.3, 0.3, 0.3, 0.3), "cm"))
+
+# ggsave("day21a.png", device = png, type = "cairo", bg = "white", width = 14, height = 11, units = "cm", dpi = 150)
+```
+
+
+
