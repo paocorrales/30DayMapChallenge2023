@@ -11,7 +11,7 @@
 
 
 
-<title>Día 5: Mapa analógico</title>
+<title>Día 22: El norte no siempre está arriba</title>
 
 <script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -329,19 +329,53 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Día 5: Mapa analógico</h1>
+<h1 class="title toc-ignore">Día 22: El norte no siempre está
+arriba</h1>
 
 </div>
 
 
-<p>No datos, no R para el mapa de hoy. Solo Clem que decidió probar el
-rompecabezas como colchón.</p>
-<p><img
-src="https://cdn.fosstodon.org/media_attachments/files/111/359/294/313/658/623/original/d8e8f9f60d29beab.jpg"
-width="500" /></p>
-<p><img
-src="https://cdn.fosstodon.org/media_attachments/files/111/359/297/707/562/268/original/4746acc76facf08f.jpg"
-width="500" /></p>
+<p>Este debería ser el mapa en 5 minutos pero es el norte no siempre
+está arriba versión poco esfuerzo. En vez de graficar la anomalía de la
+altura geopotencial alrededor del polo sur, hoy es alrededor del polo
+norte!</p>
+<pre class="r"><code>sf::sf_use_s2(FALSE)
+mapa &lt;- rnaturalearth::ne_coastline(returnclass = &quot;sf&quot;) %&gt;% 
+  sf::st_crop(xmin = -180, xmax = 180, ymin = 5, ymax = 90)
+
+z &lt;- ReadNetCDF(&quot;datos/geopotencial_era5.nc&quot;)
+
+grid &lt;- expand.grid(longitude = seq(0, 360, by = 2.5),
+                    latitude = seq(-90, 90, by = 2.5))
+
+z %&gt;% 
+  .[level == 200] %&gt;% 
+  .[latitude &gt; 0] %&gt;% 
+  .[, gh.z := Anomaly(z), by = .(latitude)] %&gt;% 
+  .[, c(&quot;u&quot;, &quot;v&quot;) := GeostrophicWind(gh.z, longitude, latitude)] %&gt;% 
+  .[grid, on = .NATURAL] %&gt;% 
+  na.omit() %&gt;% 
+  ggplot(aes(longitude, latitude)) +
+  geom_contour_fill(aes(z = gh.z,), xwrap = c(0, 360), breaks = seq(-3000, 2000, 500)) +
+  geom_contour_tanaka(aes(z = gh.z), xwrap = c(0, 360)) +
+  geom_sf(data = mapa, inherit.aes = FALSE, linewidth = 0.3) +
+  # geom_streamline(aes(dx = dlon(u, latitude), dy = dlat(v)), 
+  #                 dt = 100, S = 100, 
+  #                 xwrap = c(0, 360), arrow = NULL) +
+  scale_fill_divergent(guide = guide_colorsteps(barwidth = 0.5,
+                                                barheight = 15),
+                       breaks = seq(-3000, 2000, 500)) +
+  coord_sf(crs = &quot;+proj=laea +lat_0=90&quot;, default_crs = &quot;+proj=lonlat&quot;, lims_method = &quot;orthogonal&quot;) +
+  labs(x = NULL, y = NULL, fill = NULL,
+       title = &quot;Anomalía de la altura geopotencial en 200 hPa y viento geostrófico&quot;,
+       subtitle = &quot;Promedio mensual para octubre de 2023&quot;,
+       caption = &quot;Fuente: ERA5 - Reanalisis Europeo&quot;) +
+  theme_void(base_size = 10,
+             base_family = &quot;Roboto Condensed Light&quot;) +
+  theme(plot.title = element_text(face = &quot;bold&quot;),
+        plot.margin = unit(c(0.3, 0.3, 0.3, 0.3), &quot;cm&quot;))</code></pre>
+<p><img src="day22_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<pre class="r"><code>ggsave(&quot;day22.png&quot;, device = png, type = &quot;cairo&quot;, bg = &quot;white&quot;, width = 14, height = 13, units = &quot;cm&quot;, dpi = 150)</code></pre>
 
 
 
