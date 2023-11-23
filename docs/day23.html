@@ -11,7 +11,7 @@
 
 
 
-<title>Día 17: Flow</title>
+<title>Día 23: 3D</title>
 
 <script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -332,53 +332,28 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Día 17: Flow</h1>
+<h1 class="title toc-ignore">Día 23: 3D</h1>
 
 </div>
 
 
-<div id="datos" class="section level2">
-<h2>Datos</h2>
-<p>El detalle exacto de los datos es un poco anegdotico hoy porque
-estaba más interesada en la pinta, en lo que me imagino cuando alguien
-me dice “flow” o “flujo”. Obvio que pienso en fluidos geofísicos, en el
-aire y el agua. Así que fui directo a buscar datos que más o menos
-conosco: <a
-href="https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-oras5?tab=overview">ORAS5
-global ocean reanalysis monthly data from 1958 to present</a>. Descargué
-la velocidad media para octubre de 2023 en todos los niveles (porque no
-había otra opción) pero me quedo solo con la velocidad cerca de
-superficie.</p>
-<pre class="r"><code>velocidad &lt;- ReadNetCDF(&quot;datos/vomecrty_control_monthly_highres_3D_202310_OPER_v0.1.nc&quot;, vars = c(&quot;vomecrty&quot;, &quot;nav_lat&quot;, &quot;nav_lon&quot;),
-           subset = list(depthv = c(0, 1))) %&gt;% 
-  .[, vozocrtx := ReadNetCDF(&quot;datos/vozocrtx_control_monthly_highres_3D_202310_OPER_v0.1.nc&quot;, vars = &quot;vozocrtx&quot;, 
-           subset = list(depthu = c(0, 1)), out = &quot;vector&quot;)]</code></pre>
-<p>Quise agregar un mapa pero resulta que estos datos tienen la latitud
-y longitud como variables en una reticula irregular y no hay datos de la
-proyección así que imposible graficar en coordenadas y que las cosas se
-vean bien.</p>
-<p>El ojo entrenado va a reconocer rápidamente la corriente de Malvinas
-y la de Brasil y hasta capaz la corriente ecuatorial sur.</p>
-<pre class="r"><code>velocidad %&gt;% 
-  .[, spd := sqrt(vozocrtx^2 + vomecrty^2)] %&gt;% 
-  .[x %between% c(750, 1100) &amp; y %between% c(0, 580)] %&gt;%
-  ggplot(aes(x, y)) +
-  geom_arrow(data = function(x) x[is.cross(x, y, skip = 1)], 
-             aes(dx = vozocrtx, dy = vomecrty, color = spd)) +
-  scale_mag(max_size = 0.5, guide = NULL) +
-  scale_color_distiller(palette = &quot;Blues&quot;, direction = 1, guide = NULL) +
-  coord_equal(ratio = 1/1.5, expand = FALSE) +
-   labs(x = NULL, y = NULL, fill = NULL,
-       title = &quot;Velocidad del agua en la superficie del mar&quot;,
-       subtitle = &quot;Promedio mensual para octubre de 2023&quot;,
-       caption = &quot;Fuente: ORAS5 - Reanalisis Oceánico Global&quot;) +
-  theme_void(base_size = 10,
+<pre class="r"><code>topo &lt;- GetTopography(335, 348, 67, 63, resolution = 0.02) %&gt;% 
+  .[, lon := ConvertLongitude(lon)]</code></pre>
+<pre class="r"><code>ggplot(topo, aes(x = lon, y = lat)) +
+  geom_contour_fill(aes(z = h, fill = after_stat(level)),  breaks = seq(0, 2500, 200)) +
+  geom_contour_tanaka(aes(z = h), breaks = seq(0, 2500, 200), range = c(0.01, 0.2)) +
+  scico::scale_fill_scico_d(palette = &quot;fes&quot;, begin = 0.505,
+                            labels = function(x) JumpBy(x, 3, fill = &quot;&quot;),
+                            guide = guide_colorsteps(barwidth = 0.5,
+                                                     barheight = 15)) +
+  labs(x = NULL, y = NULL, fill = NULL,
+       title = &quot;Islandia&quot;,
+       caption = &quot;ETOPO1 Global Relief Model&quot;) +
+  theme_minimal(base_size = 10,
                 base_family = &quot;Roboto Condensed Light&quot;) +
-  theme(plot.title = element_text(face = &quot;bold&quot;),
-        plot.margin = unit(c(0.3, 0.3, 0.3, 0.3), &quot;cm&quot;))</code></pre>
-<p><img src="day17_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
-<pre class="r"><code># ggsave(&quot;day17.png&quot;, device = png, type = &quot;cairo&quot;, bg = &quot;white&quot;, width = 10, height = 12, units = &quot;cm&quot;, dpi = 150)</code></pre>
-</div>
+  theme(plot.title = element_text(face = &quot;bold&quot;))</code></pre>
+<p><img src="day23_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<pre class="r"><code># ggsave(&quot;day23.png&quot;, device = png, type = &quot;cairo&quot;, bg = &quot;white&quot;, width = 15, height = 10, units = &quot;cm&quot;, dpi = 150)</code></pre>
 
 
 
