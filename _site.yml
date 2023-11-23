@@ -47,6 +47,8 @@ navbar:
         href: day21.html
       - text: "Día 22: Norte"
         href: day22.html
+      - text: "Día 23: 3D"
+        href: day23.html
 output_dir: docs
 output:
   html_document:

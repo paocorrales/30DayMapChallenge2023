@@ -1,0 +1,38 @@
+---
+title: 'Día 23: 3D'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+library(dplyr)
+library(metR)
+```
+
+
+```{r}
+topo <- GetTopography(335, 348, 67, 63, resolution = 0.02) %>% 
+  .[, lon := ConvertLongitude(lon)]
+```
+
+```{r}
+ggplot(topo, aes(x = lon, y = lat)) +
+  geom_contour_fill(aes(z = h, fill = after_stat(level)),  breaks = seq(0, 2500, 200)) +
+  geom_contour_tanaka(aes(z = h), breaks = seq(0, 2500, 200), range = c(0.01, 0.2)) +
+  scico::scale_fill_scico_d(palette = "fes", begin = 0.505,
+                            labels = function(x) JumpBy(x, 3, fill = ""),
+                            guide = guide_colorsteps(barwidth = 0.5,
+                                                     barheight = 15)) +
+  labs(x = NULL, y = NULL, fill = NULL,
+       title = "Islandia",
+       caption = "ETOPO1 Global Relief Model") +
+  theme_minimal(base_size = 10,
+                base_family = "Roboto Condensed Light") +
+  theme(plot.title = element_text(face = "bold"))
+
+
+# ggsave("day23.png", device = png, type = "cairo", bg = "white", width = 15, height = 10, units = "cm", dpi = 150)
+```
+
