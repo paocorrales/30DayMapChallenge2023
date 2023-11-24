@@ -11,7 +11,7 @@
 
 
 
-<title>Día 21: Raster</title>
+<title>Día 24: Blanco y negro</title>
 
 <script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -335,89 +335,33 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Día 21: Raster</h1>
+<h1 class="title toc-ignore">Día 24: Blanco y negro</h1>
 
 </div>
 
 
-<p>Me había olvido lo vueltero que es trabajar con datos de satélite.
-Todo lo primero son funciones para leer los datos, la proyección,
-transformar las variables, etc. También hay una escala de colores
-específica que se usa para el canal 13 de goes 16 que convertí en
-función porque la uso siempre.</p>
-<pre class="r"><code>goes_projection &lt;- function (x, y, ncfile) 
-{
-  proj_info &lt;- ncdf4::ncatt_get(ncfile, &quot;goes_imager_projection&quot;)
-  h &lt;- proj_info$perspective_point_height
-  map_proj &lt;- paste0(&quot;+proj=geos&quot;, &quot; +h=&quot;, proj_info$perspective_point_height, 
-                     &quot; +lon_0=&quot;, proj_info$longitude_of_projection_origin, 
-                     &quot; +sweep=&quot;, proj_info$sweep_angle_axis, &quot; +ellps=GRS80&quot;)
-  x_atr &lt;- ncdf4::ncatt_get(ncfile, &quot;x&quot;)
-  x &lt;- (x * x_atr$scale_factor + x_atr$add_offset) * h
-  y_atr &lt;- ncdf4::ncatt_get(ncfile, &quot;y&quot;)
-  y &lt;- (y * y_atr$scale_factor + y_atr$add_offset) * h
-  proj4::project(list(x, y), map_proj, inverse = TRUE)
-}
+<div id="r-markdown" class="section level2">
+<h2>R Markdown</h2>
+<pre class="r"><code>ba_bb &lt;- getbb(&quot;Buenos Aires&quot;)
 
-calculate_rad &lt;- function (rad, ncfile) 
-{
-  rad_atr &lt;- ncdf4::ncatt_get(ncfile, &quot;Rad&quot;)
-  if_else(rad %between% rad_atr$valid_range, rad, NA_real_)
-}
+calles &lt;- ba_bb %&gt;%
+  opq() %&gt;% 
+  add_osm_feature(key = &quot;highway&quot;) %&gt;%
+  # add_osm_feature(key = &quot;highway&quot;, value = c(&quot;primary&quot;, &quot;secondary&quot;, &quot;tertiary&quot;, &quot;residential&quot;)) %&gt;%
+  osmdata_sf()
 
-rad_to_tb &lt;- function (rad, ncfile, h = 6.629e-34, c = 299800000, kb = 1.381e-23) 
-{
-  rad &lt;- c(rad)
-  planck_fk1 &lt;- ncdf4::ncvar_get(ncfile, &quot;planck_fk1&quot;)
-  planck_fk2 &lt;- ncdf4::ncvar_get(ncfile, &quot;planck_fk2&quot;)
-  planck_bc1 &lt;- ncdf4::ncvar_get(ncfile, &quot;planck_bc1&quot;)
-  planck_bc2 &lt;- ncdf4::ncvar_get(ncfile, &quot;planck_bc2&quot;)
-  tb &lt;- (planck_fk2/(log((planck_fk1/rad) + 1)) - planck_bc1)/planck_bc2
-  tb &lt;- tb - 273.15
-  return(tb)
-}
-
-xlim &lt;- c(2600, 3950)
-ylim &lt;- c(3700, 4750)
-
-file &lt;- &quot;datos/goes/OR_ABI-L1b-RadF-M3C13_G16_s20183262300364_e20183262311142_c20183262311197.nc&quot;
-nc &lt;- ncdf4::nc_open(file)
-
-goes &lt;- ReadNetCDF(file, 
-                   vars = c(rad = &quot;Rad&quot;, qf = &quot;DQF&quot;), 
-                   subset = list(x = xlim, y = ylim)) %&gt;% 
-  .[, rad := calculate_rad(rad, nc)] %&gt;%
-  .[, tb := rad_to_tb(rad, nc)] %&gt;%
-  .[, c(&quot;lon&quot;, &quot;lat&quot;) := goes_projection(x, y, nc)] </code></pre>
-<pre class="r"><code>scale_fill_topes &lt;- function (colours = hex, limits = c(-90, 50), breaks = seq(-90, 
-                                                                               50, 20), guide = guide_colorbar(barheight = 15), ...) 
-{
-  topes &lt;- data.table::fread(here::here(&quot;datos/paleta_topes&quot;))
-  colours &lt;- rgb(topes$V2, topes$V3, topes$V4, maxColorValue = 255)
-  scale_fill_gradientn(colours = colours, limits = limits, 
-                       breaks = breaks, guide = guide, ...)
-}
-
-mapa &lt;- rnaturalearth::ne_countries(country = &quot;Argentina&quot;, returnclass = &quot;sf&quot;) %&gt;% 
-  sf::st_transform(&quot;+proj=geos +h=35786023 +lon_0=-75 +sweep=x +ellps=GRS80&quot;)</code></pre>
-<div id="versión-con-geom_raster-y-sin-mapa" class="section level2">
-<h2>Versión con geom_raster y sin mapa :(</h2>
-<pre class="r"><code>goes %&gt;% 
-  ggplot(aes(x, y)) +
-  geom_raster(aes(fill = tb)) +
-  scale_fill_topes(guide = guide_colorbar(barwidth = 0.5,
-                                          barheight = 15)) +
-  coord_equal(expand = FALSE, ratio = 1/1.1) +
-  labs(x = NULL, y = NULL, fill = NULL,
-       title = &quot;Temperatura de brillo para el canal 13 de GOES-16&quot;,
-       subtitle = &quot;22 de noviembre de 2018&quot;,
-       caption = &quot;Fuente: ABI-GOES-16&quot;) +
-  theme_void(base_size = 10,
-             base_family = &quot;Roboto Condensed Light&quot;) +
-  theme(plot.title = element_text(face = &quot;bold&quot;),
-        plot.margin = unit(c(0.3, 0.3, 0.3, 0.3), &quot;cm&quot;))</code></pre>
-<p><img src="day21_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
-<pre class="r"><code># ggsave(&quot;day21a.png&quot;, device = png, type = &quot;cairo&quot;, bg = &quot;white&quot;, width = 14, height = 11, units = &quot;cm&quot;, dpi = 150)</code></pre>
+calles</code></pre>
+<pre class="r"><code>calles$osm_lines %&gt;% 
+  ggplot() +
+  geom_sf(linewidth = 0.1) +
+  labs(title = &quot;Ciudad de Buenos Aires &lt;br&gt;&lt;span style = &#39;font-size:10pt;&#39;&gt;Open Street Map&lt;/span&gt;&quot;) +
+  theme_void(base_family = &quot;Roboto Condensed&quot;) +
+  theme(plot.title = ggtext::element_markdown(margin = margin(t = 40, b = -50), 
+                                              size = 12,
+                                              hjust=0.8, vjust=0.5),
+        plot.margin = unit(c(0, 0, 0, 0), &quot;cm&quot;))</code></pre>
+<p><img src="day24_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<pre class="r"><code> ggsave(&quot;day24.png&quot;, device = png, type = &quot;cairo&quot;, bg = &quot;white&quot;, width = 12, height = 14, units = &quot;cm&quot;, dpi = 150)</code></pre>
 </div>
 
 
