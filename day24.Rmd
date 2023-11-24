@@ -1,0 +1,44 @@
+---
+title: 'Día 24: Blanco y negro'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
+library(ggplot2)
+library(dplyr)
+library(osmdata)
+```
+
+## R Markdown
+
+```{r}
+ba_bb <- getbb("Buenos Aires")
+
+calles <- ba_bb %>%
+  opq() %>% 
+  add_osm_feature(key = "highway") %>%
+  # add_osm_feature(key = "highway", value = c("primary", "secondary", "tertiary", "residential")) %>%
+  osmdata_sf()
+
+calles
+```
+
+```{r}
+calles$osm_lines %>% 
+  ggplot() +
+  geom_sf(linewidth = 0.1) +
+  labs(title = "Ciudad de Buenos Aires <br><span style = 'font-size:10pt;'>Open Street Map</span>") +
+  theme_void(base_family = "Roboto Condensed") +
+  theme(plot.title = ggtext::element_markdown(margin = margin(t = 40, b = -50), 
+                                              size = 12,
+                                              hjust=0.8, vjust=0.5),
+        plot.margin = unit(c(0, 0, 0, 0), "cm"))
+
+ ggsave("day24.png", device = png, type = "cairo", bg = "white", width = 12, height = 14, units = "cm", dpi = 150)
+```
+
